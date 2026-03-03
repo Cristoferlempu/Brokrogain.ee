@@ -44,30 +44,9 @@ async function loginWithPin() {
         return;
     }
     
-    statusEl.textContent = '🔄 Kontrollin PIN-i...';
+    statusEl.textContent = '🔄 Sisselogimine...';
     
-    // Check if PIN exists in database
-    const client = getSupabaseClient();
-    if (client) {
-        const { data, error } = await client
-            .from('gallery_posts')
-            .select('owner_id')
-            .eq('owner_id', pin)
-            .limit(1);
-        
-        if (error) {
-            console.error('Login error:', error);
-            statusEl.textContent = '❌ Viga andmebaasi ühenduses';
-            return;
-        }
-        
-        if (!data || data.length === 0) {
-            statusEl.textContent = '❌ Selle PIN-iga kontot ei leitud';
-            return;
-        }
-    }
-    
-    // PIN is valid, log in
+    // PIN is valid format, log in (don't check database - any 5-digit PIN is valid)
     sessionStorage.setItem(SESSION_PIN_KEY, pin);
     statusEl.textContent = '✅ Sisselogimine õnnestus!';
     
@@ -92,9 +71,17 @@ async function generateNewPin() {
     // Save to localStorage as well
     localStorage.setItem(USER_PIN_KEY, newPin);
     
-    // Auto-login after 2 seconds
+    // Auto-login after 2 seconds (no database check needed for new PIN)
     setTimeout(() => {
-        loginWithPin();
+        sessionStorage.setItem(SESSION_PIN_KEY, newPin);
+        statusEl.textContent = '✅ Sisselogimine õnnestus!';
+        
+        setTimeout(() => {
+            hideLoginScreen();
+            loadGallery();
+            showUserPin();
+            showLogoutButton();
+        }, 500);
     }, 2000);
 }
 
