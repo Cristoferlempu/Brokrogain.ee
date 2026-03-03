@@ -437,11 +437,12 @@ async function deleteImageFromCollection(collectionId, imageId) {
         if (hasCloudGallery()) {
             try {
                 const client = getSupabaseClient();
+                const userId = getUserId();
                 const { error } = await client
                     .from('gallery_posts')
                     .delete()
                     .eq('id', imageId)
-                    .eq('owner_id', getUserId());
+                    .or(`owner_id.is.null,owner_id.eq.${userId}`);
 
                 if (error) {
                     showStatus(formatSupabaseError(error, 'Pildi kustutamine pilvest ebaõnnestus'), 'error');
