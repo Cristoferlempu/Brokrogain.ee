@@ -23,6 +23,29 @@
 </header>
 
 <main>
+    <!-- Login Screen -->
+    <div id="loginScreen" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 9999; justify-content: center; align-items: center;">
+        <div style="background: white; padding: 40px; border-radius: 12px; max-width: 400px; text-align: center;">
+            <h2 style="margin-bottom: 20px;">🔒 Galerii Sisselogimine</h2>
+            <p style="color: #666; margin-bottom: 30px;">Sisesta oma 5-kohaline PIN või loo uus konto</p>
+            
+            <input type="text" id="loginPin" placeholder="Sisesta PIN (5 numbrit)" maxlength="5" 
+                   style="width: 100%; padding: 15px; font-size: 24px; text-align: center; letter-spacing: 8px; border: 2px solid #ddd; border-radius: 8px; margin-bottom: 15px;" />
+            
+            <button onclick="loginWithPin()" style="width: 100%; padding: 15px; background: #4F46E5; color: white; border: none; border-radius: 8px; font-size: 16px; cursor: pointer; margin-bottom: 10px;">
+                Logi sisse
+            </button>
+            
+            <div style="margin: 20px 0; color: #999;">või</div>
+            
+            <button onclick="generateNewPin()" style="width: 100%; padding: 15px; background: #10B981; color: white; border: none; border-radius: 8px; font-size: 16px; cursor: pointer;">
+                Genereeri uus PIN (loo konto)
+            </button>
+            
+            <p id="loginStatus" style="margin-top: 20px; color: #EF4444;"></p>
+        </div>
+    </div>
+
     <div class="breadcrumb">
         <a href="index.html">← Avaleht</a> / Galerii
     </div>

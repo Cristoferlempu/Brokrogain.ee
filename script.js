@@ -1,16 +1,142 @@
-// Initialize gallery on page load
+// Session storage key for logged in user
+const SESSION_PIN_KEY = 'loggedInPin';
+
+// Authentication functions
+function isLoggedIn() {
+    return sessionStorage.getItem(SESSION_PIN_KEY) !== null;
+}
+
+function getLoggedInPin() {
+    return sessionStorage.getItem(SESSION_PIN_KEY);
+}
+
+function showLoginScreen() {
+    const loginScreen = document.getElementById('loginScreen');
+    if (loginScreen) {
+        loginScreen.style.display = 'flex';
+        // Hide gallery content
+        const uploadForm = document.querySelector('.upload-form');
+        const collectionsContainer = document.getElementById('collectionsContainer');
+        if (uploadForm) uploadForm.style.display = 'none';
+        if (collectionsContainer) collectionsContainer.style.display = 'none';
+    }
+}
+
+function hideLoginScreen() {
+    const loginScreen = document.getElementById('loginScreen');
+    if (loginScreen) {
+        loginScreen.style.display = 'none';
+        // Show gallery content
+        const uploadForm = document.querySelector('.upload-form');
+        const collectionsContainer = document.getElementById('collectionsContainer');
+        if (uploadForm) uploadForm.style.display = 'block';
+        if (collectionsContainer) collectionsContainer.style.display = 'block';
+    }
+}
+
+async function loginWithPin() {
+    const pinInput = document.getElementById('loginPin');
+    const statusEl = document.getElementById('loginStatus');
+    const pin = pinInput.value.trim();
+    
+    if (pin.length !== 5 || !/^\d{5}$/.test(pin)) {
+        statusEl.textContent = '❌ PIN peab olema täpselt 5 numbrit';
+        return;
+    }
+    
+    statusEl.textContent = '🔄 Kontrollin PIN-i...';
+    
+    // Check if PIN exists in database
+    const client = getSupabaseClient();
+    if (client) {
+        const { data, error } = await client
+            .from('gallery_posts')
+            .select('owner_id')
+            .eq('owner_id', pin)
+            .limit(1);
+        
+        if (error) {
+            console.error('Login error:', error);
+            statusEl.textContent = '❌ Viga andmebaasi ühenduses';
+            return;
+        }
+        
+        if (!data || data.length === 0) {
+            statusEl.textContent = '❌ Selle PIN-iga kontot ei leitud';
+            return;
+        }
+    }
+    
+    // PIN is valid, log in
+    sessionStorage.setItem(SESSION_PIN_KEY, pin);
+    statusEl.textContent = '✅ Sisselogimine õnnestus!';
+    
+    setTimeout(() => {
+        hideLoginScreen();
+        loadGallery();
+        showUserPin();
+        showLogoutButton();
+    }, 500);
+}
+
+async function generateNewPin() {
+    const statusEl = document.getElementById('loginStatus');
+    const pinInput = document.getElementById('loginPin');
+    
+    // Generate new 5-digit PIN
+    const newPin = Math.floor(10000 + Math.random() * 90000).toString();
+    
+    statusEl.innerHTML = `✅ Sinu uus PIN on: <strong style="font-size: 24px; display: block; margin: 10px 0; letter-spacing: 3px;">${newPin}</strong><span style="color: #666;">Kirjuta see kindlasti üles!</span>`;
+    pinInput.value = newPin;
+    
+    // Save to localStorage as well
+    localStorage.setItem(USER_PIN_KEY, newPin);
+    
+    // Auto-login after 2 seconds
+    setTimeout(() => {
+        loginWithPin();
+    }, 2000);
+}
+
+function showLogoutButton() {
+    // Check if logout button already exists
+    if (document.getElementById('logoutButton')) return;
+    
+    const logoutBtn = document.createElement('button');
+    logoutBtn.id = 'logoutButton';
+    logoutBtn.textContent = 'Logi välja';
+    logoutBtn.style.cssText = 'position: fixed; top: 20px; right: 20px; padding: 10px 20px; background: #EF4444; color: white; border: none; border-radius: 8px; cursor: pointer; z-index: 1001; font-size: 14px;';
+    logoutBtn.onclick = logout;
+    document.body.appendChild(logoutBtn);
+}
+
+function logout() {
+    sessionStorage.removeItem(SESSION_PIN_KEY);
+    location.reload();
+}
+
+// Check authentication on page load
 document.addEventListener('DOMContentLoaded', function() {
     // Only load gallery on galerii.html
     if (document.getElementById('collectionsContainer')) {
-        loadGallery();
-        if (!hasCloudGallery()) {
-            showStatus('Pilvesalvestus pole seadistatud. Hetkel salvestub ainult sinu brauserisse.', 'error');
+        // Check if user is logged in
+        if (!isLoggedIn()) {
+            showLoginScreen();
         } else {
-            checkCloudConnection();
+            // User is logged in, load gallery normally
+            loadGallery();
+            if (!hasCloudGallery()) {
+                showStatus('Pilvesalvestus pole seadistatud. Hetkel salvestub ainult sinu brauserisse.', 'error');
+            } else {
+                checkCloudConnection();
+            }
+            
+            // Show user their PIN
+            showUserPin();
+            
+            // Show logout button
+            showLogoutButton();
         }
-        
-        // Show user their PIN
-        showUserPin();
     }
 
     // Allow Enter key for collection name and image title
@@ -49,6 +175,13 @@ const SUPABASE_CLIENT = (window.supabase && SUPABASE_URL && SUPABASE_ANON_KEY)
 
 // Get or generate 5-digit PIN for this browser
 function getUserPin() {
+    // First check session (logged in user)
+    const sessionPin = getLoggedInPin();
+    if (sessionPin) {
+        return sessionPin;
+    }
+    
+    // Fallback to localStorage (shouldn't happen after login system)
     let pin = localStorage.getItem(USER_PIN_KEY);
     if (!pin) {
         // Generate random 5-digit PIN
