@@ -442,7 +442,7 @@ async function deleteImageFromCollection(collectionId, imageId) {
                     .from('gallery_posts')
                     .delete()
                     .eq('id', imageId)
-                    .or(`owner_id.is.null,owner_id.eq.${userId}`);
+                    .eq('owner_id', userId);
 
                 if (error) {
                     showStatus(formatSupabaseError(error, 'Pildi kustutamine pilvest ebaõnnestus'), 'error');
