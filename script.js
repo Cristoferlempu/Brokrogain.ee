@@ -8,6 +8,9 @@ document.addEventListener('DOMContentLoaded', function() {
         } else {
             checkCloudConnection();
         }
+        
+        // Show user their PIN
+        showUserPin();
     }
 
     // Allow Enter key for collection name and image title
@@ -31,7 +34,7 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 const GALLERY_STORAGE_KEY = 'galleryCollections';
-const USER_ID_KEY = 'galleryUserId';
+const USER_PIN_KEY = 'galleryUserPin';
 const SUPABASE_URL = window.SUPABASE_URL || '';
 const SUPABASE_ANON_KEY = window.SUPABASE_ANON_KEY || '';
 const SUPABASE_CLIENT = (window.supabase && SUPABASE_URL && SUPABASE_ANON_KEY)
@@ -44,13 +47,33 @@ const SUPABASE_CLIENT = (window.supabase && SUPABASE_URL && SUPABASE_ANON_KEY)
     })
     : null;
 
-// Get or create unique user ID for this browser
-function getUserId() {
-    // Always generate ID from browser fingerprint (screen + user agent)
-    const fingerprint = screen.width + 'x' + screen.height + '-' + navigator.userAgent.substring(0, 30);
-    // Create consistent hash from fingerprint
-    const userId = 'user_' + btoa(fingerprint).substring(0, 20);
-    return userId;
+// Get or generate 5-digit PIN for this browser
+function getUserPin() {
+    let pin = localStorage.getItem(USER_PIN_KEY);
+    if (!pin) {
+        // Generate random 5-digit PIN
+        pin = Math.floor(10000 + Math.random() * 90000).toString();
+        localStorage.setItem(USER_PIN_KEY, pin);
+        console.log('Generated new PIN:', pin);
+    }
+    return pin;
+}
+
+// Display user's PIN on the page
+function showUserPin() {
+    const pin = getUserPin();
+    const container = document.getElementById('collectionsContainer');
+    if (!container) return;
+    
+    // Create PIN display element
+    const pinDisplay = document.createElement('div');
+    pinDisplay.style.cssText = 'position: fixed; top: 80px; right: 20px; background: #4F46E5; color: white; padding: 15px 20px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); z-index: 1000; font-family: monospace;';
+    pinDisplay.innerHTML = `
+        <div style="font-size: 12px; opacity: 0.9; margin-bottom: 5px;">Sinu PIN kood:</div>
+        <div style="font-size: 24px; font-weight: bold; letter-spacing: 3px;">${pin}</div>
+        <div style="font-size: 11px; opacity: 0.8; margin-top: 5px;">Kirjuta see kood üles!</div>
+    `;
+    document.body.appendChild(pinDisplay);
 }
 
 function hasCloudGallery() {
@@ -267,12 +290,12 @@ async function loadGallery() {
 
         collection.images.forEach(img => {
             const imageId = img.id || createImageId();
-            const isOwner = img.owner_id === getUserId();
+            const isOwner = img.owner_id === getUserPin();
 
             const galleryItem = document.createElement('div');
             galleryItem.className = 'gallery-item';
 
-            console.log('Creating gallery item:', { imageId, title: img.title, hasImage: Boolean(img.image), isOwner, owner_id: img.owner_id, userId: getUserId() });
+            console.log('Creating gallery item:', { imageId, title: img.title, hasImage: Boolean(img.image), isOwner, owner_id: img.owner_id, userPin: getUserPin() });
 
             const deleteButton = isOwner 
                 ? `<button class="delete-btn" onclick="deleteImageFromCollection('${collection.id}', '${imageId}')">✕</button>`
@@ -348,7 +371,7 @@ function uploadImage() {
                         collection_name: collectionName,
                         title: imageTitle,
                         image_data: imageData,
-                        owner_id: getUserId()
+                        owner_id: getUserPin()
                     });
 
                 if (error) {
@@ -437,12 +460,12 @@ async function deleteImageFromCollection(collectionId, imageId) {
         if (hasCloudGallery()) {
             try {
                 const client = getSupabaseClient();
-                const userId = getUserId();
+                const userPin = getUserPin();
                 const { error } = await client
                     .from('gallery_posts')
                     .delete()
                     .eq('id', imageId)
-                    .eq('owner_id', userId);
+                    .eq('owner_id', userPin);
 
                 if (error) {
                     showStatus(formatSupabaseError(error, 'Pildi kustutamine pilvest ebaõnnestus'), 'error');
