@@ -1,0 +1,3 @@
+// Supabase konfiguratsoon
+window.SUPABASE_URL = 'https://nopbjnlekekvkaewljos.supabase.co';
+window.SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5vcGJqbmxla2VrdmthZXdsam9zIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MDc1MDgzNzAsImV4cCI6MjAyMzA4NDM3MH0.6dJnbRFCuBhNzF3F3G3G3G3G3G3G3G3G3G3G3G3G3G';
