@@ -268,12 +268,12 @@ async function loadGallery() {
 
         collection.images.forEach(img => {
             const imageId = img.id || createImageId();
-            const isOwner = !img.owner_id || img.owner_id === getUserId();
+            const isOwner = img.owner_id === getUserId();
 
             const galleryItem = document.createElement('div');
             galleryItem.className = 'gallery-item';
 
-            console.log('Creating gallery item:', { imageId, title: img.title, hasImage: Boolean(img.image), isOwner });
+            console.log('Creating gallery item:', { imageId, title: img.title, hasImage: Boolean(img.image), isOwner, owner_id: img.owner_id, userId: getUserId() });
 
             const deleteButton = isOwner 
                 ? `<button class="delete-btn" onclick="deleteImageFromCollection('${collection.id}', '${imageId}')">✕</button>`
