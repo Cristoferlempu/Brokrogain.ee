@@ -46,14 +46,10 @@ const SUPABASE_CLIENT = (window.supabase && SUPABASE_URL && SUPABASE_ANON_KEY)
 
 // Get or create unique user ID for this browser
 function getUserId() {
-    let userId = localStorage.getItem(USER_ID_KEY);
-    if (!userId) {
-        // Use browser fingerprint: screen resolution + user agent substring
-        const fingerprint = screen.width + 'x' + screen.height + '-' + navigator.userAgent.substring(0, 30);
-        // Create consistent hash from fingerprint
-        userId = 'user_' + btoa(fingerprint).substring(0, 20);
-        localStorage.setItem(USER_ID_KEY, userId);
-    }
+    // Always generate ID from browser fingerprint (screen + user agent)
+    const fingerprint = screen.width + 'x' + screen.height + '-' + navigator.userAgent.substring(0, 30);
+    // Create consistent hash from fingerprint
+    const userId = 'user_' + btoa(fingerprint).substring(0, 20);
     return userId;
 }
 
