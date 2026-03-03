@@ -31,6 +31,7 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 const GALLERY_STORAGE_KEY = 'galleryCollections';
+const USER_ID_KEY = 'galleryUserId';
 const SUPABASE_URL = window.SUPABASE_URL || '';
 const SUPABASE_ANON_KEY = window.SUPABASE_ANON_KEY || '';
 const SUPABASE_CLIENT = (window.supabase && SUPABASE_URL && SUPABASE_ANON_KEY)
@@ -42,6 +43,16 @@ const SUPABASE_CLIENT = (window.supabase && SUPABASE_URL && SUPABASE_ANON_KEY)
         }
     })
     : null;
+
+// Get or create unique user ID for this browser
+function getUserId() {
+    let userId = localStorage.getItem(USER_ID_KEY);
+    if (!userId) {
+        userId = 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+        localStorage.setItem(USER_ID_KEY, userId);
+    }
+    return userId;
+}
 
 function hasCloudGallery() {
     return Boolean(SUPABASE_CLIENT);
@@ -256,18 +267,23 @@ async function loadGallery() {
 
         collection.images.forEach(img => {
             const imageId = img.id || createImageId();
+            const isOwner = !img.owner_id || img.owner_id === getUserId();
 
             const galleryItem = document.createElement('div');
             galleryItem.className = 'gallery-item';
 
-            console.log('Creating gallery item:', { imageId, title: img.title, hasImage: Boolean(img.image) });
+            console.log('Creating gallery item:', { imageId, title: img.title, hasImage: Boolean(img.image), isOwner });
+
+            const deleteButton = isOwner 
+                ? `<button class="delete-btn" onclick="deleteImageFromCollection('${collection.id}', '${imageId}')">✕</button>`
+                : '';
 
             galleryItem.innerHTML = `
                 <img src="${img.image}" alt="${img.title}" class="gallery-image">
                 <div class="gallery-overlay">
                     <p>${img.title}</p>
                 </div>
-                <button class="delete-btn" onclick="deleteImageFromCollection('${collection.id}', '${imageId}')">✕</button>
+                ${deleteButton}
             `;
 
             galleryDiv.appendChild(galleryItem);
@@ -331,7 +347,8 @@ function uploadImage() {
                     .insert({
                         collection_name: collectionName,
                         title: imageTitle,
-                        image_data: imageData
+                        image_data: imageData,
+                        owner_id: getUserId()
                     });
 
                 if (error) {
@@ -423,7 +440,8 @@ async function deleteImageFromCollection(collectionId, imageId) {
                 const { error } = await client
                     .from('gallery_posts')
                     .delete()
-                    .eq('id', imageId);
+                    .eq('id', imageId)
+                    .eq('owner_id', getUserId());
 
                 if (error) {
                     showStatus(formatSupabaseError(error, 'Pildi kustutamine pilvest ebaõnnestus'), 'error');
