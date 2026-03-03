@@ -48,6 +48,7 @@ async function loginWithPin() {
     
     // PIN is valid format, log in (don't check database - any 5-digit PIN is valid)
     sessionStorage.setItem(SESSION_PIN_KEY, pin);
+    console.log('🔐 Logged in with PIN:', pin);
     statusEl.textContent = '✅ Sisselogimine õnnestus!';
     
     setTimeout(() => {
@@ -410,12 +411,21 @@ async function loadGallery() {
 
         collection.images.forEach(img => {
             const imageId = img.id || createImageId();
-            const isOwner = img.owner_id === getUserPin();
+            const currentUserPin = getUserPin();
+            const imageOwnerPin = img.owner_id;
+            const isOwner = imageOwnerPin === currentUserPin;
 
             const galleryItem = document.createElement('div');
             galleryItem.className = 'gallery-item';
 
-            console.log('Creating gallery item:', { imageId, title: img.title, hasImage: Boolean(img.image), isOwner, owner_id: img.owner_id, userPin: getUserPin() });
+            console.log('🖼️ Gallery item:', { 
+                imageId, 
+                title: img.title, 
+                imageOwnerPin, 
+                currentUserPin, 
+                isOwner,
+                willShowDeleteButton: isOwner
+            });
 
             const deleteButton = isOwner 
                 ? `<button class="delete-btn" onclick="deleteImageFromCollection('${collection.id}', '${imageId}')">✕</button>`
@@ -485,13 +495,16 @@ function uploadImage() {
             console.log('Uploading to Supabase cloud...');
             try {
                 const client = getSupabaseClient();
+                const uploadPin = getUserPin();
+                console.log('📤 Uploading with owner_id:', uploadPin);
+                
                 const { error } = await client
                     .from('gallery_posts')
                     .insert({
                         collection_name: collectionName,
                         title: imageTitle,
                         image_data: imageData,
-                        owner_id: getUserPin()
+                        owner_id: uploadPin
                     });
 
                 if (error) {
@@ -581,6 +594,30 @@ async function deleteImageFromCollection(collectionId, imageId) {
             try {
                 const client = getSupabaseClient();
                 const userPin = getUserPin();
+                
+                console.log('🗑️ Delete attempt:', { imageId, userPin });
+                
+                // First verify ownership before attempting delete
+                const { data: imageData, error: fetchError } = await client
+                    .from('gallery_posts')
+                    .select('owner_id')
+                    .eq('id', imageId)
+                    .single();
+                
+                if (fetchError) {
+                    console.error('❌ Failed to verify ownership:', fetchError);
+                    showStatus('Pildi kontrollimine ebaõnnestus', 'error');
+                    return;
+                }
+                
+                if (imageData.owner_id !== userPin) {
+                    console.error('❌ Ownership mismatch:', { imageOwner: imageData.owner_id, userPin });
+                    showStatus('❌ See pilt ei kuulu Sulle! Saad kustutada ainult oma pilte.', 'error');
+                    return;
+                }
+                
+                console.log('✅ Ownership verified, proceeding with delete');
+                
                 const { error } = await client
                     .from('gallery_posts')
                     .delete()
