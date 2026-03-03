@@ -64,9 +64,6 @@ function displayGallery(posts) {
             <div style="padding: 10px;">
                 <h4>${post.title}</h4>
                 <p style="color: #666; font-size: 14px;">${post.collection_name}</p>
-                <button onclick="deleteImage('${post.id}')" style="background: #EF4444; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer;">
-                    Kustuta
-                </button>
             </div>
         `;
         container.appendChild(item);
@@ -135,24 +132,4 @@ async function uploadImage() {
     };
     
     reader.readAsDataURL(file);
-}
-
-async function deleteImage(id) {
-    if (!confirm('Kustuta see pilt?')) return;
-    
-    try {
-        const { error } = await supabaseClient
-            .from('gallery_posts')
-            .delete()
-            .eq('id', id);
-        
-        if (error) {
-            alert('Kustutamine ebaõnnestus: ' + error.message);
-            return;
-        }
-        
-        loadGallery();
-    } catch (err) {
-        alert('Viga: ' + err.message);
-    }
 }
