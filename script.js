@@ -116,7 +116,8 @@ function buildCollectionsFromPosts(posts) {
             id: post.id,
             title: post.title,
             image: post.image_data,
-            createdAt: post.created_at
+            createdAt: post.created_at,
+            owner_id: post.owner_id
         });
 
         if (new Date(post.created_at) > new Date(grouped[collectionName].updatedAt)) {
