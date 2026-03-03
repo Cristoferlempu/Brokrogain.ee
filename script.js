@@ -185,7 +185,7 @@ async function loadGallery() {
             loadedFromCloud = true;
             console.log('Loaded ' + collections.length + ' collections from cloud');
         }
-        saveCollections(collections);
+        // Don't save to localStorage when cloud works (saves space)
     } catch (error) {
         console.error('Cloud load failed:', error);
         collections = getStoredCollections();
