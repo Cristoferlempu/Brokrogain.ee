@@ -137,7 +137,7 @@ async function fetchCloudCollections() {
     console.log('Fetching from cloud...');
     const { data, error } = await client
         .from('gallery_posts')
-        .select('id, collection_name, title, image_data, created_at')
+        .select('id, collection_name, title, image_data, created_at, owner_id')
         .order('created_at', { ascending: false });
 
     if (error) {
