@@ -1,2 +1,0 @@
-window.SUPABASE_URL = 'https://nopbjnlekekvkaewljos.supabase.co';
-window.SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5vcGJqbmxla2VrdmthZXdsam9zIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI1MzA2ODYsImV4cCI6MjA4ODEwNjY4Nn0.94OgCMRkcfrbhxJx9CitfzP66fcaqqhryOUSOf8c00c';
