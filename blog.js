@@ -13,6 +13,7 @@ function initBlogModule() {
     event.preventDefault();
 
     const user = await getCurrentUser();
+    const username = user ? await getUsernameByUserId(user.id) : null;
     if (!user) {
       setBlogStatus('Logi sisse, et postitusi lisada.', 'error');
       return;
@@ -20,7 +21,7 @@ function initBlogModule() {
 
     const payload = {
       title: readBlogValue('blogTitle'),
-      author_name: readBlogValue('blogAuthorName') || null,
+      author_name: username || readBlogValue('blogAuthorName') || null,
       excerpt: readBlogValue('blogExcerpt') || null,
       content: readBlogValue('blogContent')
     };
@@ -49,6 +50,7 @@ function initBlogModule() {
 async function setupBlogAuth(form, authHint) {
   const applyState = async () => {
     const user = await getCurrentUser();
+    const username = user ? await getUsernameByUserId(user.id) : null;
     const isLoggedIn = Boolean(user);
     toggleFormEnabled(form, isLoggedIn);
 
@@ -60,8 +62,8 @@ async function setupBlogAuth(form, authHint) {
     }
 
     const authorInput = document.getElementById('blogAuthorName');
-    if (isLoggedIn && authorInput && !authorInput.value.trim() && user.email) {
-      authorInput.value = user.email.split('@')[0];
+    if (isLoggedIn && authorInput && !authorInput.value.trim() && username) {
+      authorInput.value = username;
     }
   };
 
@@ -83,6 +85,19 @@ async function getCurrentUser() {
   const { data, error } = await window.supabaseClient.auth.getUser();
   if (error) return null;
   return data?.user || null;
+}
+
+async function getUsernameByUserId(userId) {
+  if (!userId) return null;
+
+  const { data, error } = await window.supabaseClient
+    .from('user_profiles')
+    .select('username')
+    .eq('user_id', userId)
+    .maybeSingle();
+
+  if (error) return null;
+  return data?.username || null;
 }
 
 async function isModeratorUser() {
