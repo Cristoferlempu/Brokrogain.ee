@@ -24,26 +24,74 @@ function initTripsModule() {
       location: getValue('tripLocation') || null,
       description: getValue('tripDescription') || null
     };
+    const imageFileInput = document.getElementById('tripImageFile');
+    const imageFile = imageFileInput && imageFileInput.files ? imageFileInput.files[0] : null;
 
     if (!payload.title || !payload.description) {
       setTripsStatus('Please fill in title and description.', 'error');
       return;
     }
 
-    setTripsStatus('Saving…', 'loading');
+    if (imageFile) {
+      if (!imageFile.type || !imageFile.type.startsWith('image/')) {
+        setTripsStatus('Vali sobiv pildifail (JPG, PNG, WEBP).', 'error');
+        return;
+      }
+      if (imageFile.size > 10 * 1024 * 1024) {
+        setTripsStatus('Pildifail on liiga suur (max 10MB).', 'error');
+        return;
+      }
+    }
+
+    setTripsStatus('Salvestan…', 'loading');
 
     try {
+      if (imageFile) {
+        const uploadedUrl = await uploadTripImageToStorage(imageFile);
+        if (!uploadedUrl) {
+          setTripsStatus('Pildi üleslaadimine ebaõnnestus.', 'error');
+          return;
+        }
+        payload.image_url = uploadedUrl;
+      }
+
       const { error } = await window.supabaseClient.from('trips').insert([payload]);
       if (error) throw error;
 
       form.reset();
-      setTripsStatus('Saved!', 'success');
+      setTripsStatus('Retk lisatud!', 'success');
       await loadTrips();
     } catch (error) {
       console.error(error);
-      setTripsStatus('Something went wrong, please try again.', 'error');
+      if (String(error.message || '').includes('image_url')) {
+        setTripsStatus('Lisa Supabase SQL Editoris: alter table public.trips add column if not exists image_url text;', 'error');
+        return;
+      }
+      setTripsStatus('Midagi läks valesti, palun proovi uuesti.', 'error');
     }
   });
+}
+
+async function uploadTripImageToStorage(file) {
+  const bucketName = 'gallery-images';
+  const fileExt = (file.name.split('.').pop() || 'jpg').toLowerCase();
+  const safeExt = fileExt.replace(/[^a-z0-9]/g, '') || 'jpg';
+  const fileName = `${Date.now()}-${Math.random().toString(36).slice(2)}.${safeExt}`;
+  const filePath = `trips/${fileName}`;
+
+  const { error } = await window.supabaseClient
+    .storage
+    .from(bucketName)
+    .upload(filePath, file, {
+      cacheControl: '3600',
+      upsert: false,
+      contentType: file.type || 'image/jpeg'
+    });
+
+  if (error) throw error;
+
+  const { data } = window.supabaseClient.storage.from(bucketName).getPublicUrl(filePath);
+  return data?.publicUrl || null;
 }
 
 async function setupTripsAuth(form, authHint) {
@@ -83,7 +131,7 @@ async function loadTrips() {
   const list = document.getElementById('tripsList');
   if (!list) return;
 
-  setTripsStatus('Loading trips…', 'loading');
+  setTripsStatus('Laen retki…', 'loading');
   list.innerHTML = '';
 
   try {
@@ -105,6 +153,13 @@ async function loadTrips() {
       const card = document.createElement('article');
       card.className = 'card';
 
+      const image = document.createElement('img');
+      image.className = 'card-image';
+      image.loading = 'lazy';
+      image.decoding = 'async';
+      image.src = trip.image_url || 'img/taustapilt.jpg';
+      image.alt = trip.title || 'Retke pilt';
+
       const content = document.createElement('div');
       content.className = 'card-content';
 
@@ -122,6 +177,7 @@ async function loadTrips() {
       content.appendChild(h3);
       content.appendChild(meta);
       content.appendChild(desc);
+      card.appendChild(image);
       card.appendChild(content);
       list.appendChild(card);
 
@@ -131,7 +187,7 @@ async function loadTrips() {
     setTripsStatus('');
   } catch (error) {
     console.error(error);
-    setTripsStatus('Something went wrong, please try again.', 'error');
+    setTripsStatus('Midagi läks valesti, palun proovi uuesti.', 'error');
   }
 }
 

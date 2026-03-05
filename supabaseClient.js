@@ -23,7 +23,8 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
     title text not null,
     date date,
     location text,
-    description text
+    description text,
+    image_url text
   );
 
   create table if not exists public.gallery_images (
