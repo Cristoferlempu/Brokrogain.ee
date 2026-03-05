@@ -243,23 +243,13 @@ main {
 }
 
 .card-meta span {
-    background: #f3f4f6;
-    border-radius: 999px;
-    padding: 6px 10px;
-    font-size: 13px;
-    font-weight: 600;
-}
-
-body:not(.home-page) .card-meta span {
     color: #111827;
     background: #e5e7eb;
     border: 1px solid #9ca3af;
-}
-
-body.dark-mode:not(.home-page) .card-meta span {
-    color: #f8fafc;
-    background: #1e293b;
-    border-color: #475569;
+    border-radius: 999px;
+    padding: 8px 11px;
+    font-size: 14px;
+    font-weight: 700;
 }
 
 .home-page .card-meta {
@@ -275,12 +265,9 @@ body.dark-mode:not(.home-page) .card-meta span {
     padding: 9px 12px;
     font-size: 15px;
     font-weight: 800;
-    color: #0f172a;
-    background: #e5e7eb;
-    border: 1px solid #9ca3af;
 }
 
-body.dark-mode .home-page .card-meta span {
+body.dark-mode .card-meta span {
     color: #f8fafc;
     background: #1e293b;
     border-color: #475569;
