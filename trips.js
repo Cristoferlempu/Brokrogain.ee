@@ -26,6 +26,15 @@ function initTripsModule() {
       trip_length: getValue('tripLength') || null,
       description: getValue('tripDescription') || null
     };
+
+    if (payload.trip_length) {
+      const parsedLength = Number.parseFloat(String(payload.trip_length).replace(',', '.'));
+      if (!Number.isFinite(parsedLength)) {
+        setTripsStatus('Retke pikkus peab olema number.', 'error');
+        return;
+      }
+      payload.trip_length = String(parsedLength);
+    }
     const imageFileInput = document.getElementById('tripImageFile');
     const imageFile = imageFileInput && imageFileInput.files ? imageFileInput.files[0] : null;
 

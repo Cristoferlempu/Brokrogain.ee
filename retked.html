@@ -40,7 +40,7 @@
 			<input type="text" id="tripTitle" placeholder="Retke pealkiri" required>
 			<input type="date" id="tripDate">
 			<input type="text" id="tripLocation" placeholder="Asukoht (näit. Valgejärv)">
-			<input type="text" id="tripLength" placeholder="Retke pikkus (nt 12 km)">
+			<input type="number" id="tripLength" placeholder="Retke pikkus (nt 12)" min="0" step="0.1" inputmode="decimal">
 			<input type="file" id="tripImageFile" accept="image/*">
 			<textarea id="tripDescription" placeholder="Lühikirjeldus" rows="3" required></textarea>
 			<button type="submit">Lisa retk</button>
@@ -61,6 +61,6 @@
 	<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 	<script src="script.js?v=20260305-6"></script>
 	<script src="supabaseClient.js?v=20260305-2"></script>
-	<script src="trips.js?v=20260305-6"></script>
+	<script src="trips.js?v=20260305-7"></script>
 </body>
 </html>
