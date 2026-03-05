@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="et">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Blogi - Matkagrupp Eesti</title>
+	<link rel="stylesheet" href="style.css?v=20260304-1">
+</head>
+<body>
+
+<header id="avaleht">
+	<div class="header-inner">
+		<h1>Matkagrupp Eesti</h1>
+		<p>Risti läbi Eestimaa!</p>
+	</div>
+
+	<nav class="site-nav" aria-label="Põhinavigatsioon">
+		<button id="themeToggle" class="theme-toggle" type="button" aria-pressed="false">🌙 Tume režiim</button>
+		<ul>
+			<li><a href="index.html">Avaleht</a></li>
+			<li><a href="retked.html">Retked</a></li>
+			<li><a href="galerii.html">Galerii</a></li>
+			<li><a href="blogi.html">Blogi</a></li>
+			<li><a href="brokrogainilugu.html">BrokRogaini lugu</a></li>
+		</ul>
+	</nav>
+</header>
+
+<main>
+	<section class="content-section">
+		<h2>Kirjuta oma kogemusest</h2>
+		<form id="feedbackForm" class="feedback-form" data-feedback-key="comments-blogi">
+			<label for="feedbackName">Nimi</label>
+			<input id="feedbackName" type="text" placeholder="Sinu nimi" required>
+
+			<label for="feedbackMessage">Kommentaar</label>
+			<textarea id="feedbackMessage" placeholder="Mida arvad meie blogist?" rows="4" required></textarea>
+
+			<button type="submit">Lisa kommentaar</button>
+		</form>
+		<ul id="feedbackList" class="feedback-list" aria-live="polite"></ul>
+	</section>
+</main>
+
+<footer>
+	<p>&copy; 2026 Matkagrupp Eesti. Eesti looduse armastajad.</p>
+	<p><a href="mailto:info@matkagrupp.ee">Kirjuta meile</a> või <a href="#">jää jälgijaks</a></p>
+</footer>
+
+<script src="script.js?v=20260304-1"></script>
+</body>
+</html>

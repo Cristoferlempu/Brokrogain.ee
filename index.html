@@ -3,74 +3,103 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Brokrogain Eesti</title>
-    <!-- ÕIGE CSS LINK -->
-    <link rel="stylesheet" href="style.css">
+    <title>Matkagrupp Eesti</title>
+    <link rel="stylesheet" href="style.css?v=20260304-1">
 </head>
-<body>
+<body class="home-page">
 
 <header id="avaleht">
-    <h1>Brokrogain Eesti</h1>
-    <p>Risti läbi Eestimaa!</p>
+    <div class="header-inner">
+        <h1>Matkagrupp Eesti</h1>
+        <p>Risti läbi Eestimaa!</p>
+    </div>
 
-    <nav>
+    <nav class="site-nav" aria-label="Põhinavigatsioon">
+        <button id="themeToggle" class="theme-toggle" type="button" aria-pressed="false">🌙 Tume režiim</button>
         <ul>
             <li><a href="#avaleht">Avaleht</a></li>
             <li><a href="retked.html">Retked</a></li>
             <li><a href="galerii.html">Galerii</a></li>
-            <li><a href="brokrogainilugu.html">Brokrogaini lugu</a></li>
+            <li><a href="blogi.html">Blogi</a></li>
+            <li><a href="brokrogainilugu.html">BrokRogaini lugu</a></li>
         </ul>
     </nav>
 </header>
 
 <main>
-    <!-- Tervituse blokk -->
-    <section class="welcome">
-        <h2>Tere tulemast!</h2>
-        <p>See on meie Brokrogain Eesti blogi, kuhu paneme kirja kõik retked ja kogemused.</p>
+    <section class="welcome home-hero">
+        <p class="hero-kicker">Risti läbi Eestimaa</p>
+        <h2>Liigume samm-sammult läbi Eestimaa!</h2>
+        <p>Jaga oma kogemusi ja emotsioone!</p>
+        <div class="hero-actions">
+            <a href="retked.html" class="btn">Vaata retki →</a>
+            <a href="galerii.html" class="btn btn-secondary">Ava galerii →</a>
+        </div>
     </section>
 
-    <!-- Retked -->
+    <section class="content-section stats-section">
+        <div class="stats-grid">
+            <div class="stat-item">
+                <p class="stat-value">12+</p>
+                <p class="stat-label">Planeeritud retke</p>
+            </div>
+            <div class="stat-item">
+                <p class="stat-value">8,5 km</p>
+                <p class="stat-label">Koos läbitud</p>
+            </div>
+            <div class="stat-item">
+                <p class="stat-value">2026</p>
+                <p class="stat-label">Matkagrupp asutati</p>
+            </div>
+        </div>
+    </section>
+
     <section id="blogi" class="content-section">
         <h2>Retked</h2>
+        <p>Iga retke kohta leiad marsruudi, raskusastme, kestuse ja päeviku.</p>
 
         <div class="card-container">
             <div class="card">
-                <img src="valgejarv.jpg" alt="Matk Valgejärvele" class="card-image">
+                <img src="img/valgejarv.jpg" alt="Matk Valgejärvele" class="card-image" loading="lazy" decoding="async">
                 <div class="card-content">
                     <h3>Matk Valgejärvele</h3>
                     <div class="card-meta">
+                        <span>🧭 Marsruut: ringrada</span>
                         <span>📍 8,5 km</span>
-                        <span>⭐ Lihtne–keskmine</span>
                         <span>📅 01. märts 2026</span>
+                        <span>⏱️ 2 h 30 min</span>
+                        <span>⭐ Lihtne–keskmine</span>
                     </div>
-                    <p>Mõnus pühapäevane matk looduses</p>
-                    <a href="matk-valgejarvele.html">Loe lähemalt →</a>
+                    <p>Mõnus pühapäevane matk looduses.</p>
+                    <a href="matk-valgejarvele.html">Ava retkepäevik →</a>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Galerii sektsioon -->
     <section id="galerii" class="content-section">
-        <h2>📸 Galerii</h2>
+        <h2>Galerii</h2>
         <p>Vaata fantastilisi hetki meie matkadelt!</p>
+        <div class="gallery-preview-grid" aria-label="Galerii eelvaade">
+            <img src="img/valgejarv.jpg" alt="Valgejärve matkaraja vaade" loading="lazy" decoding="async">
+            <img src="img/taustapilt.jpg" alt="Metsarada matkagrupi retkel" loading="lazy" decoding="async">
+        </div>
         <a href="galerii.html" class="btn">Ava galerii →</a>
     </section>
 
-    <!-- Brokrogaini lugu nupuna -->
     <section id="brokog" class="content-section">
-        <h2>Brokrogaini lugu</h2>
-        <p>Tutvu meie loo ja eesmärkidega.</p>
+        <h2>BrokRogaini lugu</h2>
+        <p>Tutvu BrokRogaini ajalooga</p>
         <a href="brokrogainilugu.html" class="btn">Loe lugu →</a>
     </section>
 
 </main>
+
 <footer>
-    <p>&copy; 2026 Brokrogain Eesti. Eesti looduse armastajad.</p>
-    <p><a href=\"mailto:info@matkagrupp.ee\">Kirjuta meile</a> või <a href=\"#\">jää jälgijaks</a></p>
+    <p>&copy; 2026 Matkagrupp Eesti. Eesti looduse armastajad.</p>
+    <p><a href="mailto:info@matkagrupp.ee">Kirjuta meile</a> või <a href="#">jää jälgijaks</a></p>
 </footer>
-<!-- Kui hiljem tahad JS-i kasutada -->
-<script src="script.js"></script>
+
+<script src="script.js?v=20260304-1"></script>
 </body>
 </html>

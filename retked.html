@@ -1,63 +1,78 @@
 <!DOCTYPE html>
 <html lang="et">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Retked - Brokrogain Eesti</title>
-    <link rel="stylesheet" href="style.css">
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Retked - Matkagrupp Eesti</title>
+	<link rel="stylesheet" href="style.css?v=20260304-1">
 </head>
 <body>
 
 <header id="avaleht">
-    <h1>Brokrogain Eesti</h1>
-    <p>Risti läbi Eestimaa!</p>
+	<div class="header-inner">
+		<h1>Matkagrupp Eesti</h1>
+		<p>Risti läbi Eestimaa!</p>
+	</div>
 
-    <nav>
-        <ul>
-            <li><a href="index.html">Avaleht</a></li>
-            <li><a href="retked.html">Retked</a></li>
-            <li><a href="galerii.html">Galerii</a></li>
-            <li><a href="brokrogainilugu.html">Brokrogaini lugu</a></li>
-        </ul>
-    </nav>
+	<nav class="site-nav" aria-label="Põhinavigatsioon">
+		<button id="themeToggle" class="theme-toggle" type="button" aria-pressed="false">🌙 Tume režiim</button>
+		<ul>
+			<li><a href="index.html">Avaleht</a></li>
+			<li><a href="retked.html">Retked</a></li>
+			<li><a href="galerii.html">Galerii</a></li>
+			<li><a href="blogi.html">Blogi</a></li>
+			<li><a href="brokrogainilugu.html">BrokRogaini lugu</a></li>
+		</ul>
+	</nav>
 </header>
 
 <main>
-    <div class="breadcrumb">
-        <a href="index.html">← Avaleht</a> / Retked
-    </div>
+	<div class="breadcrumb">
+		<a href="index.html">← Avaleht</a> / Retked
+	</div>
 
-    <section class="content-section">
-        <h2>Retked</h2>
-        <p>Siin on kõik meie seni kirja pandud matkad.</p>
+	<section class="content-section">
+		<h2>Retked</h2>
+		<p>Siin on kõik meie seni kirja pandud matkad koos marsruudi, raskuse ja kestusega.</p>
 
-        <!-- Retke lisamise vorm -->
-        <div class="upload-form">
-            <input type="date" id="hikeDate" />
-            <input type="text" id="hikeDistance" placeholder="Kaugus (km)" />
-            <input type="text" id="hikeDifficulty" placeholder="Raskusaste" />
-            <input type="text" id="hikeSummary" placeholder="Lühikirjeldus" />
-            <input type="text" id="hikeLocation" placeholder="Asukoht (näit. &quot;Valgejärv&quot;)" autocomplete="off" />
-        <!-- Google Places API autocomplete will populate this field when enabled -->
-            <input type="url" id="hikeLink" placeholder="Matka kogemused (valikuline)" />
-            <button onclick="addHike()">Lisa retk</button>
-        </div>
-        <p id="hikeStatus"></p>
+		<div class="upload-form">
+			<input type="date" id="hikeDate">
+			<input type="text" id="hikeDistance" placeholder="Kaugus (km)">
+			<input type="text" id="hikeDuration" placeholder="Kestus (nt 3 h 10 min)">
+			<input type="text" id="hikeDifficulty" placeholder="Raskusaste">
+			<input type="text" id="hikeRoute" placeholder="Marsruut (nt ringrada)">
+			<input type="text" id="hikeSummary" placeholder="Lühikirjeldus">
+			<input type="text" id="hikeLocation" placeholder="Asukoht (näit. Valgejärv)" autocomplete="off">
+			<input type="url" id="hikeLink" placeholder="Retkepäeviku link (valikuline)">
+			<button id="addHikeButton" type="button">Lisa retk</button>
+		</div>
+		<p id="hikeStatus"></p>
 
-        <div class="card-container" id="hikesContainer">
-            <!-- cards will be injected here by script -->
-        </div>
-    </section>
+		<div class="card-container" id="hikesContainer">
+			<div class="card">
+				<img src="img/valgejarv.jpg" alt="Matk Valgejärvele" class="card-image" loading="lazy" decoding="async">
+				<div class="card-content">
+					<h3>Matk Valgejärvele</h3>
+					<div class="card-meta">
+						<span>🧭 Marsruut: ringrada</span>
+						<span>📍 8,5 km</span>
+						<span>📅 01. märts 2026</span>
+						<span>⏱️ 2 h 30 min</span>
+						<span>⭐ Lihtne–keskmine</span>
+					</div>
+					<p>Mõnus pühapäevane matk looduses</p>
+					<a href="matk-valgejarvele.html">Ava retkepäevik →</a>
+				</div>
+			</div>
+		</div>
+	</section>
 </main>
 
 <footer>
-    <p>&copy; 2026 Brokrogain Eesti. Eesti looduse armastajad.</p>
-    <p><a href="mailto:info@brokrogain.ee">Kirjuta meile</a> või <a href="#">jää jälgijaks</a></p>
+	<p>&copy; 2026 Matkagrupp Eesti. Eesti looduse armastajad.</p>
+	<p><a href="mailto:info@brokrogain.ee">Kirjuta meile</a> või <a href="#">jää jälgijaks</a></p>
 </footer>
 
-<!-- load Google Maps Places library for location autocomplete (replace YOUR_API_KEY) -->
-<script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&libraries=places"></script>
-
-<script src="script.js"></script>
+<script src="script.js?v=20260304-1"></script>
 </body>
 </html>
