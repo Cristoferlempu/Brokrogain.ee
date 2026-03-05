@@ -3,7 +3,36 @@ let revealObserver;
 document.addEventListener('DOMContentLoaded', () => {
 	initThemeToggle();
 	initScrollReveal();
+	initAuthUserBadge();
 });
+
+function initAuthUserBadge() {
+	if (!window.supabaseClient || !window.supabaseClient.auth) return;
+
+	let badge = document.getElementById('authUserBadge');
+	if (!badge) {
+		badge = document.createElement('div');
+		badge.id = 'authUserBadge';
+		badge.className = 'auth-user-badge';
+		document.body.appendChild(badge);
+	}
+
+	const render = async () => {
+		const { data, error } = await window.supabaseClient.auth.getUser();
+		if (error || !data?.user) {
+			badge.hidden = true;
+			return;
+		}
+
+		badge.textContent = `Logitud sisse kasutajaga: ${data.user.email}`;
+		badge.hidden = false;
+	};
+
+	render();
+	window.supabaseClient.auth.onAuthStateChange(() => {
+		render();
+	});
+}
 
 function initThemeToggle() {
 	const toggleButton = document.getElementById('themeToggle');

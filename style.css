@@ -470,6 +470,24 @@ body.dark-mode .card-meta span {
     color: #1d4ed8;
 }
 
+.auth-user-badge {
+    position: fixed;
+    top: 10px;
+    left: 10px;
+    z-index: 1200;
+    background: rgba(15, 23, 42, 0.88);
+    color: #f8fafc;
+    padding: 7px 10px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.25);
+    max-width: min(92vw, 420px);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
 .feedback-form {
     display: grid;
     gap: 8px;
@@ -631,6 +649,11 @@ body.dark-mode .status-message.error {
 body.dark-mode .status-message.info {
     background: #1e293b;
     color: #93c5fd;
+}
+
+body.dark-mode .auth-user-badge {
+    background: rgba(30, 41, 59, 0.92);
+    color: #e2e8f0;
 }
 
 body.dark-mode .blog-post,
