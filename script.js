@@ -4,7 +4,86 @@ document.addEventListener('DOMContentLoaded', () => {
 	initThemeToggle();
 	initScrollReveal();
 	initAuthUserBadge();
+	initTopLeaderboard();
 });
+
+async function initTopLeaderboard() {
+	const list = document.getElementById('leaderboardList');
+	if (!list) return;
+
+	const client = await waitForSupabaseClient();
+	if (!client) {
+		list.innerHTML = '<li class="leaderboard-item">Edetabel pole hetkel saadaval.</li>';
+		return;
+	}
+
+	const { data: trips, error: tripsError } = await client
+		.from('trips')
+		.select('user_id, trip_length');
+
+	if (tripsError) {
+		list.innerHTML = '<li class="leaderboard-item">Edetabeli laadimine ebaõnnestus.</li>';
+		return;
+	}
+
+	const rows = Array.isArray(trips) ? trips : [];
+	const kmByUser = new Map();
+
+	rows.forEach((trip) => {
+		if (!trip?.user_id) return;
+		const rawValue = String(trip.trip_length || '').trim().replace(',', '.');
+		const parsedKm = Number.parseFloat(rawValue.replace(/[^\d.]/g, ''));
+		if (!Number.isFinite(parsedKm)) return;
+		const current = kmByUser.get(trip.user_id) || 0;
+		kmByUser.set(trip.user_id, current + parsedKm);
+	});
+
+	if (!kmByUser.size) {
+		list.innerHTML = '<li class="leaderboard-item">Edetabelis pole veel andmeid.</li>';
+		return;
+	}
+
+	const userIds = Array.from(kmByUser.keys());
+	const { data: profiles } = await client
+		.from('user_profiles')
+		.select('user_id, username')
+		.in('user_id', userIds);
+
+	const usernameByUserId = new Map((profiles || []).map((profile) => [profile.user_id, profile.username]));
+	const topUsers = userIds
+		.map((userId) => ({
+			userId,
+			username: usernameByUserId.get(userId) || 'Kasutaja',
+			totalKm: kmByUser.get(userId) || 0
+		}))
+		.sort((a, b) => b.totalKm - a.totalKm)
+		.slice(0, 5);
+
+	list.innerHTML = '';
+	topUsers.forEach((entry, index) => {
+		const item = document.createElement('li');
+		item.className = 'leaderboard-item';
+		item.innerHTML = `<span class="leaderboard-rank">#${index + 1}</span><span class="leaderboard-name">${escapeHtml(entry.username)}</span><strong class="leaderboard-km">${entry.totalKm.toLocaleString('et-EE', { maximumFractionDigits: 1 })} km</strong>`;
+		list.appendChild(item);
+	});
+}
+
+async function waitForSupabaseClient(attempts = 20, delayMs = 120) {
+	for (let index = 0; index < attempts; index += 1) {
+		if (window.supabaseClient) return window.supabaseClient;
+		await new Promise((resolve) => setTimeout(resolve, delayMs));
+	}
+	return null;
+}
+
+function escapeHtml(text) {
+	return String(text)
+		.replaceAll('&', '&amp;')
+		.replaceAll('<', '&lt;')
+		.replaceAll('>', '&gt;')
+		.replaceAll('"', '&quot;')
+		.replaceAll("'", '&#039;');
+}
 
 function initAuthUserBadge() {
 	if (!window.supabaseClient || !window.supabaseClient.auth) return;

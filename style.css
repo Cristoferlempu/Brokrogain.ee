@@ -545,6 +545,38 @@ body.dark-mode .card-meta span {
     background: #fff;
 }
 
+.leaderboard-list {
+    list-style: none;
+    padding: 0;
+    margin: 16px 0 0;
+    display: grid;
+    gap: 10px;
+}
+
+.leaderboard-item {
+    border: 1px solid var(--border-soft);
+    border-radius: 10px;
+    padding: 12px;
+    background: #fff;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 10px;
+}
+
+.leaderboard-rank {
+    font-weight: 700;
+    color: #1B4332;
+}
+
+.leaderboard-name {
+    font-weight: 600;
+}
+
+.leaderboard-km {
+    color: #1B4332;
+}
+
 .gallery-loading {
     grid-column: 1/-1;
     text-align: center;
@@ -697,6 +729,11 @@ body.dark-mode .gallery-item,
 body.dark-mode .gallery-caption {
     background: var(--bg-surface);
     color: var(--text-main);
+    border-color: var(--border-soft);
+}
+
+body.dark-mode .leaderboard-item {
+    background: var(--bg-surface);
     border-color: var(--border-soft);
 }
 
