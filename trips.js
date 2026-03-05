@@ -20,6 +20,7 @@ function initTripsModule() {
 
     const payload = {
       title: getValue('tripTitle'),
+      user_id: user.id,
       date: getValue('tripDate') || null,
       location: getValue('tripLocation') || null,
       trip_length: getValue('tripLength') || null,
@@ -70,6 +71,10 @@ function initTripsModule() {
       }
       if (String(error.message || '').includes('trip_length')) {
         setTripsStatus('Lisa Supabase SQL Editoris: alter table public.trips add column if not exists trip_length text;', 'error');
+        return;
+      }
+      if (String(error.message || '').includes('user_id')) {
+        setTripsStatus('Lisa Supabase SQL Editoris: alter table public.trips add column if not exists user_id uuid references auth.users(id) on delete set null;', 'error');
         return;
       }
       setTripsStatus('Midagi läks valesti, palun proovi uuesti.', 'error');

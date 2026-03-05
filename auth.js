@@ -145,9 +145,19 @@ async function loadMyStats(kmElement, countElement, statusElement) {
   statusElement.textContent = 'Laen statistikat…';
   statusElement.className = 'status-message loading';
 
+  const { data: authData, error: authError } = await window.supabaseClient.auth.getUser();
+  const user = authData?.user || null;
+
+  if (authError || !user) {
+    statusElement.textContent = 'Logi sisse, et näha oma statistikat.';
+    statusElement.className = 'status-message error';
+    return;
+  }
+
   const { data, error } = await window.supabaseClient
     .from('trips')
-    .select('trip_length');
+    .select('trip_length')
+    .eq('user_id', user.id);
 
   if (error) {
     statusElement.textContent = 'Statistika laadimine ebaõnnestus.';

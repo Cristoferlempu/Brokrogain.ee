@@ -20,6 +20,7 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
   create table if not exists public.trips (
     id uuid primary key default uuid_generate_v4(),
     created_at timestamptz not null default now(),
+    user_id uuid references auth.users(id) on delete set null,
     title text not null,
     date date,
     location text,
