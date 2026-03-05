@@ -95,9 +95,15 @@ function toggleFormEnabled(form, enabled) {
 }
 
 async function getCurrentUser() {
+  if (window.appAuth?.getCurrentUser) return window.appAuth.getCurrentUser();
   const { data, error } = await window.supabaseClient.auth.getUser();
   if (error) return null;
   return data?.user || null;
+}
+
+async function isModeratorUser() {
+  if (!window.appAuth?.isModerator) return false;
+  return window.appAuth.isModerator();
 }
 
 async function uploadImageToStorage(file) {
@@ -138,6 +144,7 @@ async function loadGalleryImages() {
       .order('created_at', { ascending: false });
 
     if (error) throw error;
+    const canModerate = await isModeratorUser();
 
     if (!data || !data.length) {
       grid.innerHTML = '<p class="gallery-loading">No images yet.</p>';
@@ -167,6 +174,18 @@ async function loadGalleryImages() {
 
       content.appendChild(title);
       content.appendChild(author);
+
+      if (canModerate) {
+        const deleteButton = document.createElement('button');
+        deleteButton.type = 'button';
+        deleteButton.className = 'btn btn-danger';
+        deleteButton.textContent = 'Kustuta';
+        deleteButton.addEventListener('click', async () => {
+          await deleteGalleryItem(item);
+        });
+        content.appendChild(deleteButton);
+      }
+
       card.appendChild(image);
       card.appendChild(content);
       grid.appendChild(card);
@@ -178,6 +197,42 @@ async function loadGalleryImages() {
   } catch (error) {
     console.error(error);
     setGalleryStatus('Midagi läks valesti, palun proovi uuesti.', 'error');
+  }
+}
+
+function getStoragePathFromPublicUrl(url) {
+  if (!url) return null;
+  const marker = '/storage/v1/object/public/gallery-images/';
+  const index = url.indexOf(marker);
+  if (index === -1) return null;
+  return decodeURIComponent(url.slice(index + marker.length));
+}
+
+async function deleteGalleryItem(item) {
+  if (!item || !item.id) return;
+  const confirmed = window.confirm('Kas kustutan selle pildi?');
+  if (!confirmed) return;
+
+  setGalleryStatus('Kustutan pilti…', 'loading');
+
+  try {
+    const { error } = await window.supabaseClient
+      .from('gallery_images')
+      .delete()
+      .eq('id', item.id);
+
+    if (error) throw error;
+
+    const storagePath = getStoragePathFromPublicUrl(item.image_url);
+    if (storagePath) {
+      await window.supabaseClient.storage.from('gallery-images').remove([storagePath]);
+    }
+
+    setGalleryStatus('Pilt kustutatud.', 'success');
+    await loadGalleryImages();
+  } catch (error) {
+    console.error(error);
+    setGalleryStatus('Kustutamine ebaõnnestus. Kontrolli moderaatori õiguseid.', 'error');
   }
 }
 

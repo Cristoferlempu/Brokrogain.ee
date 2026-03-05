@@ -79,9 +79,15 @@ function toggleFormEnabled(form, enabled) {
 }
 
 async function getCurrentUser() {
+  if (window.appAuth?.getCurrentUser) return window.appAuth.getCurrentUser();
   const { data, error } = await window.supabaseClient.auth.getUser();
   if (error) return null;
   return data?.user || null;
+}
+
+async function isModeratorUser() {
+  if (!window.appAuth?.isModerator) return false;
+  return window.appAuth.isModerator();
 }
 
 async function loadBlogPosts() {
@@ -98,6 +104,7 @@ async function loadBlogPosts() {
       .order('created_at', { ascending: false });
 
     if (error) throw error;
+    const canModerate = await isModeratorUser();
 
     if (!data || !data.length) {
       list.innerHTML = '<p class="gallery-loading">No blog posts yet.</p>';
@@ -140,6 +147,18 @@ async function loadBlogPosts() {
       if (post.excerpt) article.appendChild(excerpt);
       article.appendChild(toggleButton);
       article.appendChild(fullContent);
+
+      if (canModerate) {
+        const deleteButton = document.createElement('button');
+        deleteButton.type = 'button';
+        deleteButton.className = 'btn btn-danger';
+        deleteButton.textContent = 'Kustuta';
+        deleteButton.addEventListener('click', async () => {
+          await deleteBlogPost(post.id);
+        });
+        article.appendChild(deleteButton);
+      }
+
       list.appendChild(article);
 
       if (window.observeRevealTarget) window.observeRevealTarget(article);
@@ -149,6 +168,29 @@ async function loadBlogPosts() {
   } catch (error) {
     console.error(error);
     setBlogStatus('Something went wrong, please try again.', 'error');
+  }
+}
+
+async function deleteBlogPost(postId) {
+  if (!postId) return;
+  const confirmed = window.confirm('Kas kustutan selle blogipostituse?');
+  if (!confirmed) return;
+
+  setBlogStatus('Kustutan postitust…', 'loading');
+
+  try {
+    const { error } = await window.supabaseClient
+      .from('blog_posts')
+      .delete()
+      .eq('id', postId);
+
+    if (error) throw error;
+
+    setBlogStatus('Postitus kustutatud.', 'success');
+    await loadBlogPosts();
+  } catch (error) {
+    console.error(error);
+    setBlogStatus('Kustutamine ebaõnnestus. Kontrolli moderaatori õiguseid.', 'error');
   }
 }
 

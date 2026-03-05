@@ -302,6 +302,14 @@ body.dark-mode .card-meta span {
     color: #0f172a;
 }
 
+.btn-danger {
+    background: #dc2626;
+}
+
+.btn-danger:hover {
+    box-shadow: 0 10px 18px rgba(220, 38, 38, 0.28);
+}
+
 .welcome,
 .content-section,
 .card,
@@ -672,6 +680,10 @@ body.dark-mode .btn-secondary {
 
 body.dark-mode .btn-secondary:hover {
     background: #273449;
+}
+
+body.dark-mode .btn-danger {
+    background: #b91c1c;
 }
 
 @media (prefers-reduced-motion: reduce) {

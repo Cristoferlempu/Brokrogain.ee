@@ -122,9 +122,15 @@ function toggleFormEnabled(form, enabled) {
 }
 
 async function getCurrentUser() {
+  if (window.appAuth?.getCurrentUser) return window.appAuth.getCurrentUser();
   const { data, error } = await window.supabaseClient.auth.getUser();
   if (error) return null;
   return data?.user || null;
+}
+
+async function isModeratorUser() {
+  if (!window.appAuth?.isModerator) return false;
+  return window.appAuth.isModerator();
 }
 
 async function loadTrips() {
@@ -142,6 +148,7 @@ async function loadTrips() {
       .order('created_at', { ascending: false });
 
     if (error) throw error;
+    const canModerate = await isModeratorUser();
 
     if (!data || !data.length) {
       list.innerHTML = '<p class="gallery-loading">No trips yet.</p>';
@@ -177,6 +184,18 @@ async function loadTrips() {
       content.appendChild(h3);
       content.appendChild(meta);
       content.appendChild(desc);
+
+      if (canModerate) {
+        const deleteButton = document.createElement('button');
+        deleteButton.type = 'button';
+        deleteButton.className = 'btn btn-danger';
+        deleteButton.textContent = 'Kustuta';
+        deleteButton.addEventListener('click', async () => {
+          await deleteTrip(trip);
+        });
+        content.appendChild(deleteButton);
+      }
+
       card.appendChild(image);
       card.appendChild(content);
       list.appendChild(card);
@@ -188,6 +207,42 @@ async function loadTrips() {
   } catch (error) {
     console.error(error);
     setTripsStatus('Midagi läks valesti, palun proovi uuesti.', 'error');
+  }
+}
+
+function getStoragePathFromPublicUrl(url) {
+  if (!url) return null;
+  const marker = '/storage/v1/object/public/gallery-images/';
+  const index = url.indexOf(marker);
+  if (index === -1) return null;
+  return decodeURIComponent(url.slice(index + marker.length));
+}
+
+async function deleteTrip(trip) {
+  if (!trip || !trip.id) return;
+  const confirmed = window.confirm('Kas kustutan selle retke?');
+  if (!confirmed) return;
+
+  setTripsStatus('Kustutan retke…', 'loading');
+
+  try {
+    const { error } = await window.supabaseClient
+      .from('trips')
+      .delete()
+      .eq('id', trip.id);
+
+    if (error) throw error;
+
+    const storagePath = getStoragePathFromPublicUrl(trip.image_url);
+    if (storagePath) {
+      await window.supabaseClient.storage.from('gallery-images').remove([storagePath]);
+    }
+
+    setTripsStatus('Retk kustutatud.', 'success');
+    await loadTrips();
+  } catch (error) {
+    console.error(error);
+    setTripsStatus('Kustutamine ebaõnnestus. Kontrolli moderaatori õiguseid.', 'error');
   }
 }
 

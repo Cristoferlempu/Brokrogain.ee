@@ -44,6 +44,12 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
     content text not null
   );
 
+  create table if not exists public.user_roles (
+    user_id uuid primary key references auth.users(id) on delete cascade,
+    role text not null check (role in ('moderator','user')),
+    created_at timestamptz not null default now()
+  );
+
   Demo-only RLS policy guidance (configure in Supabase dashboard):
   1) Enable RLS for all four tables.
   2) Add policy for public read and write:
@@ -52,6 +58,18 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 
   IMPORTANT: Public write is only for demo/testing.
   In production, restrict INSERT/UPDATE/DELETE with auth-based policies.
+
+  Moderator setup idea:
+  - Keep SELECT/INSERT public for your content tables if you want open posting.
+  - Add DELETE policy that allows only moderators:
+      using (
+        exists (
+          select 1
+          from public.user_roles ur
+          where ur.user_id = auth.uid()
+            and ur.role = 'moderator'
+        )
+      )
 */
 
 (function initSupabaseClient() {
@@ -65,4 +83,44 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
   }
 
   window.supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  let moderatorCache = null;
+
+  window.appAuth = {
+    async getCurrentUser() {
+      const { data, error } = await window.supabaseClient.auth.getUser();
+      if (error) return null;
+      return data?.user || null;
+    },
+    async isModerator() {
+      if (moderatorCache !== null) return moderatorCache;
+
+      const user = await this.getCurrentUser();
+      if (!user) {
+        moderatorCache = false;
+        return false;
+      }
+
+      const { data, error } = await window.supabaseClient
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      if (error) {
+        moderatorCache = false;
+        return false;
+      }
+
+      moderatorCache = data?.role === 'moderator';
+      return moderatorCache;
+    },
+    clearRoleCache() {
+      moderatorCache = null;
+    }
+  };
+
+  window.supabaseClient.auth.onAuthStateChange(() => {
+    if (window.appAuth) window.appAuth.clearRoleCache();
+  });
 })();
