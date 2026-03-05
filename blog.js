@@ -22,7 +22,6 @@ function initBlogModule() {
     const payload = {
       title: readBlogValue('blogTitle'),
       author_name: username || readBlogValue('blogAuthorName') || null,
-      excerpt: readBlogValue('blogExcerpt') || null,
       content: readBlogValue('blogContent')
     };
 
@@ -138,9 +137,6 @@ async function loadBlogPosts() {
       meta.className = 'blog-meta';
       meta.textContent = `${formatBlogDate(post.created_at)}${post.author_name ? ` · ${post.author_name}` : ''}`;
 
-      const excerpt = document.createElement('p');
-      excerpt.textContent = post.excerpt || '';
-
       const toggleButton = document.createElement('button');
       toggleButton.type = 'button';
       toggleButton.className = 'btn blog-toggle';
@@ -159,7 +155,6 @@ async function loadBlogPosts() {
 
       article.appendChild(title);
       article.appendChild(meta);
-      if (post.excerpt) article.appendChild(excerpt);
       article.appendChild(toggleButton);
       article.appendChild(fullContent);
 
