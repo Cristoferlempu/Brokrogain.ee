@@ -8,12 +8,14 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 async function initTopLeaderboard() {
-	const list = document.getElementById('leaderboardList');
-	if (!list) return;
+	const kmList = document.getElementById('leaderboardListKm') || document.getElementById('leaderboardList');
+	const tripsList = document.getElementById('leaderboardListTrips');
+	if (!kmList && !tripsList) return;
 
 	const client = await waitForSupabaseClient();
 	if (!client) {
-		list.innerHTML = '<li class="leaderboard-item">Edetabel pole hetkel saadaval.</li>';
+		if (kmList) kmList.innerHTML = '<li class="leaderboard-item">Edetabel pole hetkel saadaval.</li>';
+		if (tripsList) tripsList.innerHTML = '<li class="leaderboard-item">Edetabel pole hetkel saadaval.</li>';
 		return;
 	}
 
@@ -22,15 +24,20 @@ async function initTopLeaderboard() {
 		.select('user_id, trip_length');
 
 	if (tripsError) {
-		list.innerHTML = '<li class="leaderboard-item">Edetabeli laadimine ebaõnnestus.</li>';
+		if (kmList) kmList.innerHTML = '<li class="leaderboard-item">Edetabeli laadimine ebaõnnestus.</li>';
+		if (tripsList) tripsList.innerHTML = '<li class="leaderboard-item">Edetabeli laadimine ebaõnnestus.</li>';
 		return;
 	}
 
 	const rows = Array.isArray(trips) ? trips : [];
 	const kmByUser = new Map();
+	const tripsByUser = new Map();
 
 	rows.forEach((trip) => {
 		if (!trip?.user_id) return;
+		const currentTrips = tripsByUser.get(trip.user_id) || 0;
+		tripsByUser.set(trip.user_id, currentTrips + 1);
+
 		const rawValue = String(trip.trip_length || '').trim().replace(',', '.');
 		const parsedKm = Number.parseFloat(rawValue.replace(/[^\d.]/g, ''));
 		if (!Number.isFinite(parsedKm)) return;
@@ -38,33 +45,54 @@ async function initTopLeaderboard() {
 		kmByUser.set(trip.user_id, current + parsedKm);
 	});
 
-	if (!kmByUser.size) {
-		list.innerHTML = '<li class="leaderboard-item">Edetabelis pole veel andmeid.</li>';
+	if (!tripsByUser.size) {
+		if (kmList) kmList.innerHTML = '<li class="leaderboard-item">Edetabelis pole veel andmeid.</li>';
+		if (tripsList) tripsList.innerHTML = '<li class="leaderboard-item">Edetabelis pole veel andmeid.</li>';
 		return;
 	}
 
-	const userIds = Array.from(kmByUser.keys());
+	const userIds = Array.from(tripsByUser.keys());
 	const { data: profiles } = await client
 		.from('user_profiles')
 		.select('user_id, username')
 		.in('user_id', userIds);
 
 	const usernameByUserId = new Map((profiles || []).map((profile) => [profile.user_id, profile.username]));
-	const topUsers = userIds
+	const leaderboardUsers = userIds
 		.map((userId) => ({
 			userId,
 			username: usernameByUserId.get(userId) || 'Kasutaja',
-			totalKm: kmByUser.get(userId) || 0
-		}))
-		.sort((a, b) => b.totalKm - a.totalKm)
-		.slice(0, 5);
+			totalKm: kmByUser.get(userId) || 0,
+			tripCount: tripsByUser.get(userId) || 0
+		}));
 
-	list.innerHTML = '';
-	topUsers.forEach((entry, index) => {
+	if (kmList) {
+		const topByKm = [...leaderboardUsers]
+			.sort((a, b) => b.totalKm - a.totalKm)
+			.slice(0, 5);
+		renderLeaderboard(kmList, topByKm, (entry) => `${entry.totalKm.toLocaleString('et-EE', { maximumFractionDigits: 1 })} km`);
+	}
+
+	if (tripsList) {
+		const topByTrips = [...leaderboardUsers]
+			.sort((a, b) => b.tripCount - a.tripCount)
+			.slice(0, 5);
+		renderLeaderboard(tripsList, topByTrips, (entry) => `${entry.tripCount} retke`);
+	}
+}
+
+function renderLeaderboard(listElement, entries, valueFormatter) {
+	if (!entries.length) {
+		listElement.innerHTML = '<li class="leaderboard-item">Edetabelis pole veel andmeid.</li>';
+		return;
+	}
+
+	listElement.innerHTML = '';
+	entries.forEach((entry, index) => {
 		const item = document.createElement('li');
 		item.className = 'leaderboard-item';
-		item.innerHTML = `<span class="leaderboard-rank">#${index + 1}</span><span class="leaderboard-name">${escapeHtml(entry.username)}</span><strong class="leaderboard-km">${entry.totalKm.toLocaleString('et-EE', { maximumFractionDigits: 1 })} km</strong>`;
-		list.appendChild(item);
+		item.innerHTML = `<span class="leaderboard-rank">#${index + 1}</span><span class="leaderboard-name">${escapeHtml(entry.username)}</span><strong class="leaderboard-km">${valueFormatter(entry)}</strong>`;
+		listElement.appendChild(item);
 	});
 }
 
