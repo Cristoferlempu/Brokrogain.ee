@@ -226,16 +226,23 @@ async function deleteTrip(trip) {
   setTripsStatus('Kustutan retke…', 'loading');
 
   try {
-    const { error } = await window.supabaseClient
+    const { data, error } = await window.supabaseClient
       .from('trips')
       .delete()
-      .eq('id', trip.id);
+      .eq('id', trip.id)
+      .select('id');
 
     if (error) throw error;
+    if (!data || !data.length) {
+      throw new Error('Retke kustutamine ebaõnnestus (õigused puuduvad või rida ei leitud).');
+    }
 
     const storagePath = getStoragePathFromPublicUrl(trip.image_url);
     if (storagePath) {
-      await window.supabaseClient.storage.from('gallery-images').remove([storagePath]);
+      const { error: storageError } = await window.supabaseClient.storage.from('gallery-images').remove([storagePath]);
+      if (storageError) {
+        console.warn('Retke pilt jäi storage bucketisse alles:', storageError.message || storageError);
+      }
     }
 
     setTripsStatus('Retk kustutatud.', 'success');

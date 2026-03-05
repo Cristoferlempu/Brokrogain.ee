@@ -179,12 +179,16 @@ async function deleteBlogPost(postId) {
   setBlogStatus('Kustutan postitust…', 'loading');
 
   try {
-    const { error } = await window.supabaseClient
+    const { data, error } = await window.supabaseClient
       .from('blog_posts')
       .delete()
-      .eq('id', postId);
+      .eq('id', postId)
+      .select('id');
 
     if (error) throw error;
+    if (!data || !data.length) {
+      throw new Error('Postituse kustutamine ebaõnnestus (õigused puuduvad või rida ei leitud).');
+    }
 
     setBlogStatus('Postitus kustutatud.', 'success');
     await loadBlogPosts();

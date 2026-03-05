@@ -216,16 +216,23 @@ async function deleteGalleryItem(item) {
   setGalleryStatus('Kustutan pilti…', 'loading');
 
   try {
-    const { error } = await window.supabaseClient
+    const { data, error } = await window.supabaseClient
       .from('gallery_images')
       .delete()
-      .eq('id', item.id);
+      .eq('id', item.id)
+      .select('id');
 
     if (error) throw error;
+    if (!data || !data.length) {
+      throw new Error('Pildi kustutamine ebaõnnestus (õigused puuduvad või rida ei leitud).');
+    }
 
     const storagePath = getStoragePathFromPublicUrl(item.image_url);
     if (storagePath) {
-      await window.supabaseClient.storage.from('gallery-images').remove([storagePath]);
+      const { error: storageError } = await window.supabaseClient.storage.from('gallery-images').remove([storagePath]);
+      if (storageError) {
+        console.warn('Galerii fail jäi storage bucketisse alles:', storageError.message || storageError);
+      }
     }
 
     setGalleryStatus('Pilt kustutatud.', 'success');
