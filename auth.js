@@ -14,7 +14,7 @@ function initAuthPage() {
   const statsTripsCount = document.getElementById('statsTripsCount');
   const statsModalStatus = document.getElementById('statsModalStatus');
 
-  if (!registerForm || !loginForm || !logoutButton || !status || !currentUser || !registerSection || !loginSection || !logoutSection || !openStatsButton || !closeStatsButton || !statsModal || !statsKilometers || !statsTripsCount || !statsModalStatus) return;
+  if (!registerForm || !loginForm || !logoutButton || !status || !currentUser || !registerSection || !loginSection || !logoutSection) return;
 
   refreshAuthState(currentUser, status, registerSection, loginSection, logoutSection);
 
@@ -115,20 +115,28 @@ function initAuthPage() {
     setAuthStatus('Väljalogitud.', 'success');
   });
 
-  openStatsButton.addEventListener('click', async () => {
-    statsModal.hidden = false;
-    await loadMyStats(statsKilometers, statsTripsCount, statsModalStatus);
-  });
+  if (openStatsButton && closeStatsButton && statsModal && statsKilometers && statsTripsCount && statsModalStatus) {
+    openStatsButton.addEventListener('click', async () => {
+      statsModal.hidden = false;
+      await loadMyStats(statsKilometers, statsTripsCount, statsModalStatus);
+    });
 
-  closeStatsButton.addEventListener('click', () => {
-    statsModal.hidden = true;
-  });
-
-  statsModal.addEventListener('click', (event) => {
-    if (event.target === statsModal) {
+    closeStatsButton.addEventListener('click', () => {
       statsModal.hidden = true;
-    }
-  });
+    });
+
+    statsModal.addEventListener('click', (event) => {
+      if (event.target === statsModal) {
+        statsModal.hidden = true;
+      }
+    });
+
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && !statsModal.hidden) {
+        statsModal.hidden = true;
+      }
+    });
+  }
 }
 
 async function loadMyStats(kmElement, countElement, statusElement) {
