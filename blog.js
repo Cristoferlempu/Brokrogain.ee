@@ -179,14 +179,13 @@ async function deleteBlogPost(postId) {
   setBlogStatus('Kustutan postitust…', 'loading');
 
   try {
-    const { data, error } = await window.supabaseClient
+    const { error, count } = await window.supabaseClient
       .from('blog_posts')
-      .delete()
-      .eq('id', postId)
-      .select('id');
+      .delete({ count: 'exact' })
+      .eq('id', postId);
 
     if (error) throw error;
-    if (!data || !data.length) {
+    if (typeof count === 'number' && count === 0) {
       throw new Error('Postituse kustutamine ebaõnnestus (õigused puuduvad või rida ei leitud).');
     }
 
