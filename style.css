@@ -13,6 +13,20 @@ body {
     padding: 0;
     background: var(--bg-main);
     color: var(--text-main);
+    line-height: 1.65;
+    font-size: 16px;
+}
+
+h1,
+h2,
+h3 {
+    letter-spacing: -0.015em;
+}
+
+p {
+    margin: 0 0 1rem;
+    font-size: 1.02rem;
+    line-height: 1.75;
 }
 
 img {
@@ -38,7 +52,9 @@ header {
 
 header h1 {
     margin: 0;
-    font-size: 48px;
+    font-size: clamp(2.35rem, 5vw, 3.6rem);
+    font-weight: 700;
+    line-height: 1.1;
     font-family: 'Playfair Display', serif;
 }
 
@@ -75,6 +91,7 @@ nav a {
     color: #fff;
     text-decoration: none;
     font-weight: 600;
+    transition: color 220ms ease;
 }
 
 nav a:hover {
@@ -89,10 +106,17 @@ nav a:hover {
     padding: 8px 12px;
     font-weight: 600;
     cursor: pointer;
+    transition: transform 220ms ease, background-color 220ms ease, border-color 220ms ease, box-shadow 220ms ease;
+}
+
+.theme-toggle:hover {
+    transform: translateY(-1px);
+    background: rgba(255,255,255,0.24);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
 }
 
 main {
-    padding: 32px 20px;
+    padding: 40px 20px 56px;
 }
 
 .welcome,
@@ -101,9 +125,16 @@ main {
     padding: 30px;
     border-radius: 12px;
     max-width: 900px;
-    margin: 20px auto;
+    margin: 28px auto;
     box-shadow: 0 4px 12px rgba(0,0,0,0.08);
     border-left: 5px solid #2D6A4F;
+    transition: transform 260ms ease, box-shadow 260ms ease;
+}
+
+.welcome:hover,
+.content-section:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.12);
 }
 
 .home-hero {
@@ -159,7 +190,10 @@ main {
 }
 
 .content-section h2 {
-    margin-top: 0;
+    margin: 0 0 14px;
+    font-size: clamp(1.6rem, 3.3vw, 2.1rem);
+    font-weight: 700;
+    line-height: 1.2;
     color: #1B4332;
     font-family: 'Playfair Display', serif;
 }
@@ -182,6 +216,13 @@ main {
     overflow: hidden;
     border: 1px solid #eef2f7;
     box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    transition: transform 260ms ease, box-shadow 260ms ease, border-color 260ms ease;
+}
+
+.card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 16px 28px rgba(15, 23, 42, 0.16);
+    border-color: #dbe4ee;
 }
 
 .card-image {
@@ -242,12 +283,40 @@ body.dark-mode .home-page .card-meta span {
     color: #fff;
     text-decoration: none;
     border-radius: 8px;
+    transition: transform 220ms ease, box-shadow 220ms ease, background-color 220ms ease, color 220ms ease;
+}
+
+.card a:hover,
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 18px rgba(217, 119, 6, 0.28);
 }
 
 .btn-secondary {
     background: #fff;
     color: #1B4332;
     border: 1px solid #d1d5db;
+}
+
+.btn-secondary:hover {
+    background: #f8fafc;
+    color: #0f172a;
+}
+
+.welcome,
+.content-section,
+.card,
+.gallery-item,
+.trip-info,
+.map-section {
+    opacity: 0;
+    transform: translateY(16px);
+}
+
+.is-visible {
+    opacity: 1;
+    transform: translateY(0);
+    transition: opacity 620ms ease, transform 620ms ease;
 }
 
 .breadcrumb {
@@ -456,9 +525,42 @@ body.dark-mode .gallery-preview-grid img {
     border-color: #334155;
 }
 
+body.dark-mode .btn-secondary {
+    background: #1f2937;
+    color: #e5e7eb;
+    border-color: #475569;
+}
+
+body.dark-mode .btn-secondary:hover {
+    background: #273449;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation: none !important;
+        transition: none !important;
+        scroll-behavior: auto !important;
+    }
+
+    .welcome,
+    .content-section,
+    .card,
+    .gallery-item,
+    .trip-info,
+    .map-section {
+        opacity: 1;
+        transform: none;
+    }
+}
+
 @media (max-width: 768px) {
     header h1 { font-size: 32px; }
     .stats-grid { grid-template-columns: 1fr; }
     .card-container { grid-template-columns: 1fr; }
     .trip-info { grid-template-columns: 1fr; }
+    .welcome,
+    .content-section {
+        padding: 22px;
+        margin: 20px auto;
+    }
 }

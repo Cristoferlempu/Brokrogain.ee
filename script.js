@@ -1,5 +1,6 @@
 let supabaseClient;
 const GALLERY_SCRIPT_VERSION = '2026-03-04-v1';
+let revealObserver;
 
 const SUPABASE_URL_DIRECT = 'https://nopbjnlekekvkaewljos.supabase.co';
 const SUPABASE_ANON_KEY_DIRECT = 'sb_publishable_gjkC98hxVVQNA5fzeXEOVQ_g5Kcrg7o';
@@ -10,10 +11,43 @@ document.addEventListener('DOMContentLoaded', function() {
 	bindGalleryEvents();
 	loadGallery();
 	initThemeToggle();
+	initScrollReveal();
 	initHikeForm();
 	initFeedback();
 	console.log(`🧩 Gallery script version: ${GALLERY_SCRIPT_VERSION}`);
 });
+
+function initScrollReveal() {
+	const targets = document.querySelectorAll('.welcome, .content-section, .card, .trip-info, .map-section');
+	if (!targets.length) return;
+
+	if (!('IntersectionObserver' in window)) {
+		targets.forEach((target) => target.classList.add('is-visible'));
+		return;
+	}
+
+	revealObserver = new IntersectionObserver((entries, observer) => {
+		entries.forEach((entry) => {
+			if (!entry.isIntersecting) return;
+			entry.target.classList.add('is-visible');
+			observer.unobserve(entry.target);
+		});
+	}, {
+		threshold: 0.14,
+		rootMargin: '0px 0px -8% 0px'
+	});
+
+	targets.forEach(observeRevealTarget);
+}
+
+function observeRevealTarget(element) {
+	if (!element) return;
+	if (!revealObserver) {
+		element.classList.add('is-visible');
+		return;
+	}
+	revealObserver.observe(element);
+}
 
 function bindGalleryEvents() {
 	const uploadButton = document.getElementById('uploadButton');
@@ -150,6 +184,7 @@ function displayGallery(posts) {
 		item.appendChild(imageWrapper);
 		item.appendChild(content);
 		container.appendChild(item);
+		observeRevealTarget(item);
 	});
 }
 
@@ -329,6 +364,7 @@ function addHike() {
 	card.appendChild(image);
 	card.appendChild(content);
 	container.prepend(card);
+	observeRevealTarget(card);
 
 	status.className = 'success';
 	status.textContent = 'Retk lisatud!';
