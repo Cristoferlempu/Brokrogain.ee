@@ -24,7 +24,8 @@ function initAuthUserBadge() {
 			return;
 		}
 
-		badge.textContent = `Logitud sisse kasutajaga: ${data.user.email}`;
+		const username = await getUsernameForBadge(data.user.id);
+		badge.textContent = `Logitud sisse kasutajaga: ${username || data.user.email}`;
 		badge.hidden = false;
 	};
 
@@ -32,6 +33,19 @@ function initAuthUserBadge() {
 	window.supabaseClient.auth.onAuthStateChange(() => {
 		render();
 	});
+}
+
+async function getUsernameForBadge(userId) {
+	if (!userId || !window.supabaseClient) return null;
+
+	const { data, error } = await window.supabaseClient
+		.from('user_profiles')
+		.select('username')
+		.eq('user_id', userId)
+		.maybeSingle();
+
+	if (error) return null;
+	return data?.username || null;
 }
 
 function initThemeToggle() {

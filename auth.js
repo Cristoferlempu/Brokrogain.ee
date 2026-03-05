@@ -19,20 +19,44 @@ function initAuthPage() {
   registerForm.addEventListener('submit', async (event) => {
     event.preventDefault();
 
+    const username = normalizeUsername(readValue('registerUsername'));
     const email = readValue('registerEmail');
     const password = readValue('registerPassword');
 
-    if (!email || !password) {
-      setAuthStatus('Täida email ja parool.', 'error');
+    if (!username || !email || !password) {
+      setAuthStatus('Täida username, email ja parool.', 'error');
+      return;
+    }
+
+    if (username.length < 3) {
+      setAuthStatus('Username peab olema vähemalt 3 märki.', 'error');
       return;
     }
 
     setAuthStatus('Loon kontot…', 'loading');
-    const { error } = await window.supabaseClient.auth.signUp({ email, password });
+    const { data, error } = await window.supabaseClient.auth.signUp({
+      email,
+      password,
+      options: {
+        data: { username }
+      }
+    });
 
     if (error) {
       setAuthStatus(error.message, 'error');
       return;
+    }
+
+    const userId = data?.user?.id;
+    if (userId) {
+      const { error: profileError } = await window.supabaseClient
+        .from('user_profiles')
+        .upsert([{ user_id: userId, username, email }], { onConflict: 'user_id' });
+
+      if (profileError) {
+        setAuthStatus('Konto loodi, aga profiili salvestamine ebaõnnestus. Kontrolli user_profiles SQL seadistust.', 'error');
+        return;
+      }
     }
 
     registerForm.reset();
@@ -42,15 +66,21 @@ function initAuthPage() {
   loginForm.addEventListener('submit', async (event) => {
     event.preventDefault();
 
-    const email = readValue('loginEmail');
+    const username = normalizeUsername(readValue('loginUsername'));
     const password = readValue('loginPassword');
 
-    if (!email || !password) {
-      setAuthStatus('Täida email ja parool.', 'error');
+    if (!username || !password) {
+      setAuthStatus('Täida username ja parool.', 'error');
       return;
     }
 
     setAuthStatus('Login…', 'loading');
+    const email = await getEmailByUsername(username);
+    if (!email) {
+      setAuthStatus('Selle username-ga kontot ei leitud.', 'error');
+      return;
+    }
+
     const { error } = await window.supabaseClient.auth.signInWithPassword({ email, password });
 
     if (error) {
@@ -97,11 +127,44 @@ async function refreshAuthState(currentUser, statusElement, registerSection, log
     return;
   }
 
-  currentUser.textContent = `Sisse logitud: ${data.user.email}`;
+  const username = await getUsernameByUserId(data.user.id);
+  currentUser.textContent = `Sisse logitud: ${username || data.user.email}`;
   setAuthSections(true, registerSection, loginSection, logoutSection);
   if (!statusElement.textContent || statusElement.className.includes('info')) {
     setAuthStatus('Autentimine aktiivne.', 'success');
   }
+}
+
+async function getEmailByUsername(username) {
+  const { data, error } = await window.supabaseClient
+    .from('user_profiles')
+    .select('email')
+    .eq('username', username)
+    .maybeSingle();
+
+  if (error) {
+    console.error(error);
+    return null;
+  }
+
+  return data?.email || null;
+}
+
+async function getUsernameByUserId(userId) {
+  if (!userId) return null;
+
+  const { data, error } = await window.supabaseClient
+    .from('user_profiles')
+    .select('username')
+    .eq('user_id', userId)
+    .maybeSingle();
+
+  if (error) return null;
+  return data?.username || null;
+}
+
+function normalizeUsername(value) {
+  return String(value || '').trim().toLowerCase();
 }
 
 function setAuthSections(isLoggedIn, registerSection, loginSection, logoutSection) {

@@ -50,6 +50,13 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
     created_at timestamptz not null default now()
   );
 
+  create table if not exists public.user_profiles (
+    user_id uuid primary key references auth.users(id) on delete cascade,
+    username text not null unique,
+    email text not null,
+    created_at timestamptz not null default now()
+  );
+
   Demo-only RLS policy guidance (configure in Supabase dashboard):
   1) Enable RLS for all four tables.
   2) Add policy for public read and write:

@@ -37,6 +37,9 @@
   <section class="content-section" id="registerSection">
     <h2>Loo konto</h2>
     <form id="registerForm" class="feedback-form">
+      <label for="registerUsername">Username</label>
+      <input id="registerUsername" type="text" placeholder="Sinu kasutajanimi" required>
+
       <label for="registerEmail">Email</label>
       <input id="registerEmail" type="email" placeholder="nimi@email.com" required>
 
@@ -50,8 +53,8 @@
   <section class="content-section" id="loginSection">
     <h2>Logi sisse</h2>
     <form id="loginForm" class="feedback-form">
-      <label for="loginEmail">Email</label>
-      <input id="loginEmail" type="email" placeholder="nimi@email.com" required>
+      <label for="loginUsername">Username</label>
+      <input id="loginUsername" type="text" placeholder="Sinu kasutajanimi" required>
 
       <label for="loginPassword">Parool</label>
       <input id="loginPassword" type="password" placeholder="Parool" required>
@@ -72,8 +75,8 @@
 </footer>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="script.js?v=20260305-5"></script>
-<script src="supabaseClient.js?v=20260305-1"></script>
-<script src="auth.js?v=20260305-2"></script>
+<script src="script.js?v=20260305-6"></script>
+<script src="supabaseClient.js?v=20260305-2"></script>
+<script src="auth.js?v=20260305-3"></script>
 </body>
 </html>
