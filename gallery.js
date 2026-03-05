@@ -10,38 +10,84 @@ function initGalleryModule() {
   form.addEventListener('submit', async (event) => {
     event.preventDefault();
 
+    const fileInput = document.getElementById('galleryImageFile');
+    const imageFile = fileInput && fileInput.files ? fileInput.files[0] : null;
+
+    if (!imageFile) {
+      setGalleryStatus('Palun vali pildifail.', 'error');
+      return;
+    }
+
+    if (!imageFile.type || !imageFile.type.startsWith('image/')) {
+      setGalleryStatus('Vali sobiv pildifail (JPG, PNG, WEBP).', 'error');
+      return;
+    }
+
+    if (imageFile.size > 10 * 1024 * 1024) {
+      setGalleryStatus('Pildifail on liiga suur (max 10MB).', 'error');
+      return;
+    }
+
     const payload = {
-      image_url: getGalleryValue('galleryImageUrl'),
       title: getGalleryValue('galleryImageTitle') || null,
       author_name: getGalleryValue('galleryAuthorName') || null
     };
 
-    if (!payload.image_url) {
-      setGalleryStatus('Image URL is required.', 'error');
-      return;
-    }
-
-    setGalleryStatus('Saving…', 'loading');
+    setGalleryStatus('Laen pilti üles…', 'loading');
 
     try {
+      const uploadedUrl = await uploadImageToStorage(imageFile);
+
+      if (!uploadedUrl) {
+        setGalleryStatus('Pildi üleslaadimine ebaõnnestus.', 'error');
+        return;
+      }
+
+      payload.image_url = uploadedUrl;
+
+      setGalleryStatus('Salvestan andmeid…', 'loading');
       const { error } = await window.supabaseClient.from('gallery_images').insert([payload]);
       if (error) throw error;
 
       form.reset();
-      setGalleryStatus('Saved!', 'success');
+      setGalleryStatus('Pilt lisatud!', 'success');
       await loadGalleryImages();
     } catch (error) {
       console.error(error);
-      setGalleryStatus('Something went wrong, please try again.', 'error');
+      setGalleryStatus('Midagi läks valesti, palun proovi uuesti.', 'error');
     }
   });
+}
+
+async function uploadImageToStorage(file) {
+  const bucketName = 'gallery-images';
+  const fileExt = (file.name.split('.').pop() || 'jpg').toLowerCase();
+  const safeExt = fileExt.replace(/[^a-z0-9]/g, '') || 'jpg';
+  const fileName = `${Date.now()}-${Math.random().toString(36).slice(2)}.${safeExt}`;
+  const filePath = `uploads/${fileName}`;
+
+  const { error: uploadError } = await window.supabaseClient
+    .storage
+    .from(bucketName)
+    .upload(filePath, file, {
+      cacheControl: '3600',
+      upsert: false,
+      contentType: file.type || 'image/jpeg'
+    });
+
+  if (uploadError) {
+    throw uploadError;
+  }
+
+  const { data } = window.supabaseClient.storage.from(bucketName).getPublicUrl(filePath);
+  return data && data.publicUrl ? data.publicUrl : null;
 }
 
 async function loadGalleryImages() {
   const grid = document.getElementById('galleryGrid');
   if (!grid) return;
 
-  setGalleryStatus('Loading data…', 'loading');
+  setGalleryStatus('Laen andmeid…', 'loading');
   grid.innerHTML = '';
 
   try {
@@ -90,7 +136,7 @@ async function loadGalleryImages() {
     setGalleryStatus('');
   } catch (error) {
     console.error(error);
-    setGalleryStatus('Something went wrong, please try again.', 'error');
+    setGalleryStatus('Midagi läks valesti, palun proovi uuesti.', 'error');
   }
 }
 

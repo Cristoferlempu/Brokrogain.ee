@@ -32,17 +32,18 @@
 		<section class="content-section">
 			<h2>Matkagrupp Eesti Galerii</h2>
 			<p>Vaata fantastilisi hetki meie matkadelt üle Eesti!</p>
-			<p><strong>Igaüks saab lisada pildi lingi ja pealkirja.</strong></p>
+			<p><strong>Igaüks saab lisada pildi otse oma failidest.</strong></p>
 		</section>
 
 		<section class="content-section">
 			<h3>📸 Lisa oma pilt galeriisse</h3>
 			<form id="galleryForm" class="upload-form">
-				<input type="url" id="galleryImageUrl" placeholder="Pildi URL (https://...)" required>
+				<input type="file" id="galleryImageFile" accept="image/*" required>
 				<input type="text" id="galleryImageTitle" placeholder="Pealkiri / caption">
 				<input type="text" id="galleryAuthorName" placeholder="Sinu nimi (valikuline)">
 				<button type="submit">Lisa pilt</button>
 			</form>
+			<p>Pildifail laaditakse Supabase Storage&apos;isse ja lisatakse automaatselt galeriisse.</p>
 			<p id="galleryStatus" class="status-message" aria-live="polite"></p>
 		</section>
 
@@ -59,6 +60,6 @@
 	<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 	<script src="script.js?v=20260305-4"></script>
 	<script src="supabaseClient.js?v=20260305-1"></script>
-	<script src="gallery.js"></script>
+	<script src="gallery.js?v=20260305-2"></script>
 </body>
 </html>
