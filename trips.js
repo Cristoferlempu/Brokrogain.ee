@@ -2,13 +2,21 @@ function initTripsModule() {
   const form = document.getElementById('tripForm');
   const list = document.getElementById('tripsList');
   const status = document.getElementById('tripsStatus');
+  const authHint = document.getElementById('tripsAuthHint');
 
   if (!form || !list || !status) return;
 
   loadTrips();
+  setupTripsAuth(form, authHint);
 
   form.addEventListener('submit', async (event) => {
     event.preventDefault();
+
+    const user = await getCurrentUser();
+    if (!user) {
+      setTripsStatus('Logi sisse, et retki lisada.', 'error');
+      return;
+    }
 
     const payload = {
       title: getValue('tripTitle'),
@@ -36,6 +44,39 @@ function initTripsModule() {
       setTripsStatus('Something went wrong, please try again.', 'error');
     }
   });
+}
+
+async function setupTripsAuth(form, authHint) {
+  const applyState = async () => {
+    const user = await getCurrentUser();
+    const isLoggedIn = Boolean(user);
+    toggleFormEnabled(form, isLoggedIn);
+
+    if (authHint) {
+      authHint.textContent = isLoggedIn
+        ? `Sisse logitud: ${user.email}`
+        : 'Retke lisamiseks logi sisse.';
+      authHint.className = `status-message ${isLoggedIn ? 'success' : 'info'}`;
+    }
+  };
+
+  await applyState();
+  window.supabaseClient.auth.onAuthStateChange(() => {
+    applyState();
+  });
+}
+
+function toggleFormEnabled(form, enabled) {
+  const controls = form.querySelectorAll('input, textarea, button');
+  controls.forEach((control) => {
+    control.disabled = !enabled;
+  });
+}
+
+async function getCurrentUser() {
+  const { data, error } = await window.supabaseClient.auth.getUser();
+  if (error) return null;
+  return data?.user || null;
 }
 
 async function loadTrips() {

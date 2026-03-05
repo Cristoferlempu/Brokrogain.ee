@@ -445,7 +445,8 @@ body.dark-mode .card-meta span {
 
 .status-message.loading,
 .status-message.success,
-.status-message.error {
+.status-message.error,
+.status-message.info {
     display: block;
 }
 
@@ -462,6 +463,11 @@ body.dark-mode .card-meta span {
 .status-message.error {
     background: #fef2f2;
     color: #b91c1c;
+}
+
+.status-message.info {
+    background: #eff6ff;
+    color: #1d4ed8;
 }
 
 .feedback-form {
@@ -620,6 +626,11 @@ body.dark-mode .status-message.success {
 body.dark-mode .status-message.error {
     background: #3f1d1d;
     color: #fca5a5;
+}
+
+body.dark-mode .status-message.info {
+    background: #1e293b;
+    color: #93c5fd;
 }
 
 body.dark-mode .blog-post,

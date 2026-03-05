@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="et">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Konto – Matkagrupp Eesti</title>
+  <link rel="stylesheet" href="style.css?v=20260305-7">
+</head>
+<body>
+
+<header id="avaleht">
+  <div class="header-inner">
+    <h1>Matkagrupp Eesti</h1>
+    <p>Risti läbi Eestimaa!</p>
+  </div>
+
+  <nav class="site-nav" aria-label="Põhinavigatsioon">
+    <button id="themeToggle" class="theme-toggle" type="button" aria-pressed="false">🌙 Tume režiim</button>
+    <ul>
+      <li><a href="index.html">Avaleht</a></li>
+      <li><a href="retked.html">Retked</a></li>
+      <li><a href="galerii.html">Galerii</a></li>
+      <li><a href="blogi.html">Blogi</a></li>
+      <li><a href="brokrogainilugu.html">Matkagrupi taust</a></li>
+      <li><a href="auth.html">Konto</a></li>
+    </ul>
+  </nav>
+</header>
+
+<main>
+  <section class="content-section">
+    <h2>Konto</h2>
+    <p id="currentUser">Pole sisse logitud</p>
+    <p id="authStatus" class="status-message" aria-live="polite"></p>
+  </section>
+
+  <section class="content-section">
+    <h2>Loo konto</h2>
+    <form id="registerForm" class="feedback-form">
+      <label for="registerEmail">Email</label>
+      <input id="registerEmail" type="email" placeholder="nimi@email.com" required>
+
+      <label for="registerPassword">Parool</label>
+      <input id="registerPassword" type="password" placeholder="Vähemalt 6 märki" required>
+
+      <button type="submit">Loo konto</button>
+    </form>
+  </section>
+
+  <section class="content-section">
+    <h2>Logi sisse</h2>
+    <form id="loginForm" class="feedback-form">
+      <label for="loginEmail">Email</label>
+      <input id="loginEmail" type="email" placeholder="nimi@email.com" required>
+
+      <label for="loginPassword">Parool</label>
+      <input id="loginPassword" type="password" placeholder="Parool" required>
+
+      <button type="submit">Logi sisse</button>
+    </form>
+    <button id="logoutButton" class="btn" type="button">Logi välja</button>
+  </section>
+</main>
+
+<footer>
+  <p>&copy; 2026 Matkagrupp Eesti. Eesti looduse armastajad.</p>
+  <p><a href="mailto:info@matkagrupp.ee">Kirjuta meile</a> või <a href="#">jää jälgijaks</a></p>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="script.js?v=20260305-4"></script>
+<script src="supabaseClient.js?v=20260305-1"></script>
+<script src="auth.js"></script>
+</body>
+</html>

@@ -2,13 +2,21 @@ function initTripDiaryComments() {
   const form = document.getElementById('tripCommentForm');
   const list = document.getElementById('tripCommentsList');
   const status = document.getElementById('tripCommentsStatus');
+  const authHint = document.getElementById('tripCommentsAuthHint');
 
   if (!form || !list || !status) return;
 
   loadTripComments();
+  setupCommentsAuth(form, authHint);
 
   form.addEventListener('submit', async (event) => {
     event.preventDefault();
+
+    const user = await getCurrentUser();
+    if (!user) {
+      setTripCommentsStatus('Logi sisse, et kommentaare lisada.', 'error');
+      return;
+    }
 
     const nameInput = document.getElementById('tripCommentName');
     const commentInput = document.getElementById('tripCommentText');
@@ -38,6 +46,44 @@ function initTripDiaryComments() {
       setTripCommentsStatus('Something went wrong, please try again.', 'error');
     }
   });
+}
+
+async function setupCommentsAuth(form, authHint) {
+  const applyState = async () => {
+    const user = await getCurrentUser();
+    const isLoggedIn = Boolean(user);
+    toggleFormEnabled(form, isLoggedIn);
+
+    if (authHint) {
+      authHint.textContent = isLoggedIn
+        ? `Sisse logitud: ${user.email}`
+        : 'Kommentaari lisamiseks logi sisse.';
+      authHint.className = `status-message ${isLoggedIn ? 'success' : 'info'}`;
+    }
+
+    const nameInput = document.getElementById('tripCommentName');
+    if (isLoggedIn && nameInput && !nameInput.value.trim() && user.email) {
+      nameInput.value = user.email.split('@')[0];
+    }
+  };
+
+  await applyState();
+  window.supabaseClient.auth.onAuthStateChange(() => {
+    applyState();
+  });
+}
+
+function toggleFormEnabled(form, enabled) {
+  const controls = form.querySelectorAll('input, textarea, button');
+  controls.forEach((control) => {
+    control.disabled = !enabled;
+  });
+}
+
+async function getCurrentUser() {
+  const { data, error } = await window.supabaseClient.auth.getUser();
+  if (error) return null;
+  return data?.user || null;
 }
 
 async function loadTripComments() {

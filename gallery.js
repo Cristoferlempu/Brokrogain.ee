@@ -2,13 +2,21 @@ function initGalleryModule() {
   const form = document.getElementById('galleryForm');
   const grid = document.getElementById('galleryGrid');
   const status = document.getElementById('galleryStatus');
+  const authHint = document.getElementById('galleryAuthHint');
 
   if (!form || !grid || !status) return;
 
   loadGalleryImages();
+  setupGalleryAuth(form, authHint);
 
   form.addEventListener('submit', async (event) => {
     event.preventDefault();
+
+    const user = await getCurrentUser();
+    if (!user) {
+      setGalleryStatus('Logi sisse, et pilte lisada.', 'error');
+      return;
+    }
 
     const fileInput = document.getElementById('galleryImageFile');
     const imageFile = fileInput && fileInput.files ? fileInput.files[0] : null;
@@ -57,6 +65,39 @@ function initGalleryModule() {
       setGalleryStatus('Midagi läks valesti, palun proovi uuesti.', 'error');
     }
   });
+}
+
+async function setupGalleryAuth(form, authHint) {
+  const applyState = async () => {
+    const user = await getCurrentUser();
+    const isLoggedIn = Boolean(user);
+    toggleFormEnabled(form, isLoggedIn);
+
+    if (authHint) {
+      authHint.textContent = isLoggedIn
+        ? `Sisse logitud: ${user.email}`
+        : 'Pildi lisamiseks logi sisse.';
+      authHint.className = `status-message ${isLoggedIn ? 'success' : 'info'}`;
+    }
+  };
+
+  await applyState();
+  window.supabaseClient.auth.onAuthStateChange(() => {
+    applyState();
+  });
+}
+
+function toggleFormEnabled(form, enabled) {
+  const controls = form.querySelectorAll('input, textarea, button');
+  controls.forEach((control) => {
+    control.disabled = !enabled;
+  });
+}
+
+async function getCurrentUser() {
+  const { data, error } = await window.supabaseClient.auth.getUser();
+  if (error) return null;
+  return data?.user || null;
 }
 
 async function uploadImageToStorage(file) {

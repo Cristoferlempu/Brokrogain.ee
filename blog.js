@@ -2,13 +2,21 @@ function initBlogModule() {
   const form = document.getElementById('blogPostForm');
   const list = document.getElementById('blogPostsList');
   const status = document.getElementById('blogStatus');
+  const authHint = document.getElementById('blogAuthHint');
 
   if (!form || !list || !status) return;
 
   loadBlogPosts();
+  setupBlogAuth(form, authHint);
 
   form.addEventListener('submit', async (event) => {
     event.preventDefault();
+
+    const user = await getCurrentUser();
+    if (!user) {
+      setBlogStatus('Logi sisse, et postitusi lisada.', 'error');
+      return;
+    }
 
     const payload = {
       title: readBlogValue('blogTitle'),
@@ -36,6 +44,44 @@ function initBlogModule() {
       setBlogStatus('Something went wrong, please try again.', 'error');
     }
   });
+}
+
+async function setupBlogAuth(form, authHint) {
+  const applyState = async () => {
+    const user = await getCurrentUser();
+    const isLoggedIn = Boolean(user);
+    toggleFormEnabled(form, isLoggedIn);
+
+    if (authHint) {
+      authHint.textContent = isLoggedIn
+        ? `Sisse logitud: ${user.email}`
+        : 'Postituse lisamiseks logi sisse.';
+      authHint.className = `status-message ${isLoggedIn ? 'success' : 'info'}`;
+    }
+
+    const authorInput = document.getElementById('blogAuthorName');
+    if (isLoggedIn && authorInput && !authorInput.value.trim() && user.email) {
+      authorInput.value = user.email.split('@')[0];
+    }
+  };
+
+  await applyState();
+  window.supabaseClient.auth.onAuthStateChange(() => {
+    applyState();
+  });
+}
+
+function toggleFormEnabled(form, enabled) {
+  const controls = form.querySelectorAll('input, textarea, button');
+  controls.forEach((control) => {
+    control.disabled = !enabled;
+  });
+}
+
+async function getCurrentUser() {
+  const { data, error } = await window.supabaseClient.auth.getUser();
+  if (error) return null;
+  return data?.user || null;
 }
 
 async function loadBlogPosts() {
