@@ -502,6 +502,34 @@ body.dark-mode .card-meta span {
     max-width: 720px;
 }
 
+.stats-modal-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 1400;
+    display: grid;
+    place-items: center;
+    background: rgba(15, 23, 42, 0.55);
+    padding: 20px;
+}
+
+.stats-modal {
+    width: min(92vw, 520px);
+    background: var(--bg-surface);
+    color: var(--text-main);
+    border: 1px solid var(--border-soft);
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 10px 22px rgba(0, 0, 0, 0.2);
+}
+
+.stats-modal h3 {
+    margin: 0 0 12px;
+}
+
+.stats-modal p {
+    margin-bottom: 10px;
+}
+
 .feedback-list {
     list-style: none;
     margin: 16px 0 0;
@@ -684,6 +712,10 @@ body.dark-mode .btn-secondary:hover {
 
 body.dark-mode .btn-danger {
     background: #b91c1c;
+}
+
+body.dark-mode .stats-modal-backdrop {
+    background: rgba(2, 6, 23, 0.72);
 }
 
 @media (prefers-reduced-motion: reduce) {

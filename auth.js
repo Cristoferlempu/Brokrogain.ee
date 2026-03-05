@@ -7,8 +7,14 @@ function initAuthPage() {
   const registerSection = document.getElementById('registerSection');
   const loginSection = document.getElementById('loginSection');
   const logoutSection = document.getElementById('logoutSection');
+  const openStatsButton = document.getElementById('openStatsButton');
+  const closeStatsButton = document.getElementById('closeStatsButton');
+  const statsModal = document.getElementById('statsModal');
+  const statsKilometers = document.getElementById('statsKilometers');
+  const statsTripsCount = document.getElementById('statsTripsCount');
+  const statsModalStatus = document.getElementById('statsModalStatus');
 
-  if (!registerForm || !loginForm || !logoutButton || !status || !currentUser || !registerSection || !loginSection || !logoutSection) return;
+  if (!registerForm || !loginForm || !logoutButton || !status || !currentUser || !registerSection || !loginSection || !logoutSection || !openStatsButton || !closeStatsButton || !statsModal || !statsKilometers || !statsTripsCount || !statsModalStatus) return;
 
   refreshAuthState(currentUser, status, registerSection, loginSection, logoutSection);
 
@@ -108,6 +114,51 @@ function initAuthPage() {
 
     setAuthStatus('Väljalogitud.', 'success');
   });
+
+  openStatsButton.addEventListener('click', async () => {
+    statsModal.hidden = false;
+    await loadMyStats(statsKilometers, statsTripsCount, statsModalStatus);
+  });
+
+  closeStatsButton.addEventListener('click', () => {
+    statsModal.hidden = true;
+  });
+
+  statsModal.addEventListener('click', (event) => {
+    if (event.target === statsModal) {
+      statsModal.hidden = true;
+    }
+  });
+}
+
+async function loadMyStats(kmElement, countElement, statusElement) {
+  kmElement.textContent = '—';
+  countElement.textContent = '—';
+  statusElement.textContent = 'Laen statistikat…';
+  statusElement.className = 'status-message loading';
+
+  const { data, error } = await window.supabaseClient
+    .from('trips')
+    .select('trip_length');
+
+  if (error) {
+    statusElement.textContent = 'Statistika laadimine ebaõnnestus.';
+    statusElement.className = 'status-message error';
+    return;
+  }
+
+  const rows = Array.isArray(data) ? data : [];
+  const totalTrips = rows.length;
+  const totalKm = rows.reduce((sum, row) => {
+    const rawValue = String(row?.trip_length || '').trim().replace(',', '.');
+    const parsed = Number.parseFloat(rawValue.replace(/[^\d.]/g, ''));
+    return Number.isFinite(parsed) ? sum + parsed : sum;
+  }, 0);
+
+  kmElement.textContent = `${totalKm.toLocaleString('et-EE', { maximumFractionDigits: 1 })} km`;
+  countElement.textContent = String(totalTrips);
+  statusElement.textContent = 'Statistika uuendatud.';
+  statusElement.className = 'status-message success';
 }
 
 async function refreshAuthState(currentUser, statusElement, registerSection, loginSection, logoutSection) {

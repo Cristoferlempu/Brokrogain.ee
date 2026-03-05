@@ -65,9 +65,19 @@
 
   <section class="content-section" id="logoutSection">
     <h2>Väljalogimine</h2>
-    <a href="index.html#statistika" class="btn">Minu Statistika</a>
+    <button id="openStatsButton" class="btn" type="button">Minu Statistika</button>
     <button id="logoutButton" class="btn" type="button">Logi välja</button>
   </section>
+
+  <div id="statsModal" class="stats-modal-backdrop" hidden>
+    <section class="stats-modal" role="dialog" aria-modal="true" aria-labelledby="statsModalTitle">
+      <h3 id="statsModalTitle">Minu Statistika</h3>
+      <p><strong>Läbitud kilomeetrid:</strong> <span id="statsKilometers">—</span></p>
+      <p><strong>Retkeid kokku:</strong> <span id="statsTripsCount">—</span></p>
+      <p id="statsModalStatus" class="status-message info" aria-live="polite">Laen statistikat…</p>
+      <button id="closeStatsButton" class="btn" type="button">Sulge</button>
+    </section>
+  </div>
 </main>
 
 <footer>
@@ -78,6 +88,6 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="script.js?v=20260305-6"></script>
 <script src="supabaseClient.js?v=20260305-2"></script>
-<script src="auth.js?v=20260305-4"></script>
+<script src="auth.js?v=20260305-5"></script>
 </body>
 </html>
