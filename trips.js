@@ -8,6 +8,7 @@ function initTripsModule() {
 
   loadTrips();
   setupTripsAuth(form, authHint);
+  initTaggedUsersAutocomplete();
 
   form.addEventListener('submit', async (event) => {
     event.preventDefault();
@@ -102,6 +103,103 @@ function initTripsModule() {
       setTripsStatus('Midagi läks valesti, palun proovi uuesti.', 'error');
     }
   });
+}
+
+function initTaggedUsersAutocomplete() {
+  const input = document.getElementById('tripTaggedUsers');
+  const suggestions = document.getElementById('tripTaggedUsersSuggestions');
+  if (!input || !suggestions) return;
+
+  let debounceTimer = null;
+  let lastQueryId = 0;
+
+  const hideSuggestions = () => {
+    suggestions.hidden = true;
+    suggestions.innerHTML = '';
+  };
+
+  input.addEventListener('input', () => {
+    if (debounceTimer) window.clearTimeout(debounceTimer);
+    debounceTimer = window.setTimeout(async () => {
+      const activeQuery = getActiveTaggedUserQuery(input.value);
+      if (!activeQuery || activeQuery.length < 1) {
+        hideSuggestions();
+        return;
+      }
+
+      const currentQueryId = ++lastQueryId;
+      const usernames = await fetchUserSuggestions(activeQuery);
+      if (currentQueryId !== lastQueryId) return;
+
+      const alreadyTagged = new Set(parseTaggedUsernames(input.value));
+      const filtered = usernames.filter((username) => !alreadyTagged.has(username));
+
+      if (!filtered.length) {
+        hideSuggestions();
+        return;
+      }
+
+      suggestions.innerHTML = '';
+      filtered.forEach((username) => {
+        const item = document.createElement('li');
+        item.className = 'tag-suggestion-item';
+
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'tag-suggestion-btn';
+        button.textContent = username;
+        button.addEventListener('mousedown', (event) => {
+          event.preventDefault();
+        });
+        button.addEventListener('click', () => {
+          const tagged = parseTaggedUsernames(input.value);
+          if (!tagged.includes(username)) tagged.push(username);
+          input.value = tagged.length ? `${tagged.join(', ')}, ` : '';
+          hideSuggestions();
+          input.focus();
+        });
+
+        item.appendChild(button);
+        suggestions.appendChild(item);
+      });
+
+      suggestions.hidden = false;
+    }, 160);
+  });
+
+  input.addEventListener('blur', () => {
+    window.setTimeout(hideSuggestions, 120);
+  });
+
+  input.addEventListener('focus', () => {
+    if (suggestions.children.length) suggestions.hidden = false;
+  });
+
+  document.addEventListener('click', (event) => {
+    if (event.target === input || suggestions.contains(event.target)) return;
+    hideSuggestions();
+  });
+}
+
+async function fetchUserSuggestions(query) {
+  if (!query) return [];
+
+  const { data, error } = await window.supabaseClient
+    .from('user_profiles')
+    .select('username')
+    .ilike('username', `${query}%`)
+    .order('username', { ascending: true })
+    .limit(6);
+
+  if (error) return [];
+  return (Array.isArray(data) ? data : [])
+    .map((row) => String(row.username || '').trim().toLowerCase())
+    .filter(Boolean);
+}
+
+function getActiveTaggedUserQuery(rawValue) {
+  const segments = String(rawValue || '').split(',');
+  return String(segments[segments.length - 1] || '').trim().toLowerCase();
 }
 
 function parseTaggedUsernames(rawValue) {

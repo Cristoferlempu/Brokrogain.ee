@@ -401,6 +401,42 @@ body.dark-mode .card-meta span {
     resize: vertical;
 }
 
+.tagged-users-field {
+    position: relative;
+}
+
+.tag-suggestions {
+    list-style: none;
+    margin: 6px 0 0;
+    padding: 6px;
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 100%;
+    z-index: 20;
+    background: #fff;
+    border: 1px solid var(--border-soft);
+    border-radius: 8px;
+    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.12);
+    display: grid;
+    gap: 4px;
+}
+
+.tag-suggestion-btn {
+    width: 100%;
+    text-align: left;
+    border: 1px solid transparent;
+    background: transparent;
+    padding: 8px;
+    border-radius: 6px;
+    font: inherit;
+    cursor: pointer;
+}
+
+.tag-suggestion-btn:hover {
+    background: #f3f4f6;
+}
+
 .upload-form input,
 .upload-form button,
 .feedback-form input,
@@ -735,6 +771,19 @@ body.dark-mode .gallery-caption {
 body.dark-mode .leaderboard-item {
     background: var(--bg-surface);
     border-color: var(--border-soft);
+}
+
+body.dark-mode .tag-suggestions {
+    background: var(--bg-surface);
+    border-color: var(--border-soft);
+}
+
+body.dark-mode .tag-suggestion-btn {
+    color: var(--text-main);
+}
+
+body.dark-mode .tag-suggestion-btn:hover {
+    background: #1f2937;
 }
 
 body.dark-mode .btn-secondary {
