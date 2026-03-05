@@ -2,8 +2,8 @@
   Supabase client bootstrap for static hosting (GitHub Pages).
   Replace placeholders below with your own Supabase project values.
 */
-const SUPABASE_URL = 'https://YOUR_PROJECT_ID.supabase.co';
-const SUPABASE_ANON_KEY = 'YOUR_ANON_KEY_HERE';
+const SUPABASE_URL = 'https://nopbjnlekekvkaewljos.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5vcGJqbmxla2VrdmthZXdsam9zIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI1MzA2ODYsImV4cCI6MjA4ODEwNjY4Nn0.94OgCMRkcfrbhxJx9CitfzP66fcaqqhryOUSOf8c00c';
 
 /*
   Database schema to create in Supabase (SQL Editor):
