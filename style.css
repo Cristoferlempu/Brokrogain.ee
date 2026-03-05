@@ -209,6 +209,23 @@ main {
     font-weight: 600;
 }
 
+.home-page .card-meta {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+    gap: 10px;
+}
+
+.home-page .card-meta span {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 9px 12px;
+    font-size: 14px;
+    font-weight: 700;
+    color: #1B4332;
+    border: 1px solid #d1d5db;
+}
+
 .card a,
 .btn {
     display: inline-block;
