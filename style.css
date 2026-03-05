@@ -250,6 +250,18 @@ main {
     font-weight: 600;
 }
 
+body:not(.home-page) .card-meta span {
+    color: #111827;
+    background: #e5e7eb;
+    border: 1px solid #9ca3af;
+}
+
+body.dark-mode:not(.home-page) .card-meta span {
+    color: #f8fafc;
+    background: #1e293b;
+    border-color: #475569;
+}
+
 .home-page .card-meta {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
