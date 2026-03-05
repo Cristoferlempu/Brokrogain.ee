@@ -293,11 +293,10 @@ function addHike() {
 	const routeInput = document.getElementById('hikeRoute');
 	const summaryInput = document.getElementById('hikeSummary');
 	const locationInput = document.getElementById('hikeLocation');
-	const linkInput = document.getElementById('hikeLink');
 	const status = document.getElementById('hikeStatus');
 	const container = document.getElementById('hikesContainer');
 
-	if (!dateInput || !distanceInput || !durationInput || !difficultyInput || !routeInput || !summaryInput || !locationInput || !linkInput || !status || !container) return;
+	if (!dateInput || !distanceInput || !durationInput || !difficultyInput || !routeInput || !summaryInput || !locationInput || !status || !container) return;
 
 	const values = {
 		date: dateInput.value.trim(),
@@ -306,8 +305,7 @@ function addHike() {
 		difficulty: difficultyInput.value.trim(),
 		route: routeInput.value.trim(),
 		summary: summaryInput.value.trim(),
-		location: locationInput.value.trim(),
-		link: linkInput.value.trim()
+		location: locationInput.value.trim()
 	};
 
 	const required = ['date', 'distance', 'duration', 'difficulty', 'route', 'summary', 'location'];
@@ -352,15 +350,9 @@ function addHike() {
 	const summary = document.createElement('p');
 	summary.textContent = values.summary;
 
-	const link = document.createElement('a');
-	link.href = values.link || '#';
-	link.textContent = values.link ? 'Ava retkepäevik →' : 'Päeviku link lisamata';
-	if (!values.link) link.addEventListener('click', (event) => event.preventDefault());
-
 	content.appendChild(title);
 	content.appendChild(meta);
 	content.appendChild(summary);
-	content.appendChild(link);
 	card.appendChild(image);
 	card.appendChild(content);
 	container.prepend(card);
@@ -377,7 +369,6 @@ function addHike() {
 	routeInput.value = '';
 	summaryInput.value = '';
 	locationInput.value = '';
-	linkInput.value = '';
 }
 
 function formatHikeDate(dateValue) {
