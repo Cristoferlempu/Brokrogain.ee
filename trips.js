@@ -77,7 +77,7 @@ async function uploadTripImageToStorage(file) {
   const fileExt = (file.name.split('.').pop() || 'jpg').toLowerCase();
   const safeExt = fileExt.replace(/[^a-z0-9]/g, '') || 'jpg';
   const fileName = `${Date.now()}-${Math.random().toString(36).slice(2)}.${safeExt}`;
-  const filePath = `trips/${fileName}`;
+  const filePath = `uploads/${fileName}`;
 
   const { error } = await window.supabaseClient
     .storage
