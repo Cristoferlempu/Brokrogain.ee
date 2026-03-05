@@ -127,6 +127,8 @@ function initAuthPage() {
       statsModal.style.display = 'none';
     };
 
+    closeStatsModal();
+
     openStatsButton.addEventListener('click', async () => {
       await openStatsModal();
     });
