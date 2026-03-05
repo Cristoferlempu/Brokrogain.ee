@@ -22,6 +22,7 @@ function initTripsModule() {
       title: getValue('tripTitle'),
       date: getValue('tripDate') || null,
       location: getValue('tripLocation') || null,
+      trip_length: getValue('tripLength') || null,
       description: getValue('tripDescription') || null
     };
     const imageFileInput = document.getElementById('tripImageFile');
@@ -65,6 +66,10 @@ function initTripsModule() {
       console.error(error);
       if (String(error.message || '').includes('image_url')) {
         setTripsStatus('Lisa Supabase SQL Editoris: alter table public.trips add column if not exists image_url text;', 'error');
+        return;
+      }
+      if (String(error.message || '').includes('trip_length')) {
+        setTripsStatus('Lisa Supabase SQL Editoris: alter table public.trips add column if not exists trip_length text;', 'error');
         return;
       }
       setTripsStatus('Midagi läks valesti, palun proovi uuesti.', 'error');
@@ -177,6 +182,7 @@ async function loadTrips() {
       meta.className = 'card-meta';
       if (trip.date) meta.appendChild(buildMeta(`📅 ${formatDate(trip.date)}`));
       if (trip.location) meta.appendChild(buildMeta(`📍 ${trip.location}`));
+      if (trip.trip_length) meta.appendChild(buildMeta(`📏 ${trip.trip_length}`));
 
       const desc = document.createElement('p');
       desc.textContent = trip.description || '';
