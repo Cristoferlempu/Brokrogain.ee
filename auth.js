@@ -170,8 +170,7 @@ async function loadMyStats(kmElement, countElement, statusElement) {
 
   const { data, error } = await window.supabaseClient
     .from('trips')
-    .select('trip_length')
-    .eq('user_id', user.id);
+    .select('user_id, participant_user_ids, trip_length');
 
   if (error) {
     statusElement.textContent = 'Statistika laadimine ebaõnnestus.';
@@ -180,8 +179,17 @@ async function loadMyStats(kmElement, countElement, statusElement) {
   }
 
   const rows = Array.isArray(data) ? data : [];
-  const totalTrips = rows.length;
-  const totalKm = rows.reduce((sum, row) => {
+  const userRows = rows.filter((row) => {
+    const participants = new Set();
+    if (row?.user_id) participants.add(row.user_id);
+    if (Array.isArray(row?.participant_user_ids)) {
+      row.participant_user_ids.filter(Boolean).forEach((id) => participants.add(id));
+    }
+    return participants.has(user.id);
+  });
+
+  const totalTrips = userRows.length;
+  const totalKm = userRows.reduce((sum, row) => {
     const rawValue = String(row?.trip_length || '').trim().replace(',', '.');
     const parsed = Number.parseFloat(rawValue.replace(/[^\d.]/g, ''));
     return Number.isFinite(parsed) ? sum + parsed : sum;

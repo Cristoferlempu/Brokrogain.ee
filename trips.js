@@ -18,9 +18,18 @@ function initTripsModule() {
       return;
     }
 
+    const taggedUsernames = parseTaggedUsernames(getValue('tripTaggedUsers'));
+    const participantUserIds = await resolveParticipantUserIds(taggedUsernames);
+
+    if (participantUserIds.missingUsernames.length) {
+      setTripsStatus(`Neid kasutajaid ei leitud: ${participantUserIds.missingUsernames.join(', ')}`, 'error');
+      return;
+    }
+
     const payload = {
       title: getValue('tripTitle'),
       user_id: user.id,
+      participant_user_ids: Array.from(new Set([user.id, ...participantUserIds.userIds])),
       date: getValue('tripDate') || null,
       location: getValue('tripLocation') || null,
       trip_length: getValue('tripLength') || null,
@@ -86,9 +95,48 @@ function initTripsModule() {
         setTripsStatus('Lisa Supabase SQL Editoris: alter table public.trips add column if not exists user_id uuid references auth.users(id) on delete set null;', 'error');
         return;
       }
+      if (String(error.message || '').includes('participant_user_ids')) {
+        setTripsStatus('Lisa Supabase SQL Editoris: alter table public.trips add column if not exists participant_user_ids uuid[];', 'error');
+        return;
+      }
       setTripsStatus('Midagi läks valesti, palun proovi uuesti.', 'error');
     }
   });
+}
+
+function parseTaggedUsernames(rawValue) {
+  if (!rawValue) return [];
+  return Array.from(new Set(
+    String(rawValue)
+      .split(',')
+      .map((value) => value.trim().toLowerCase())
+      .filter(Boolean)
+  ));
+}
+
+async function resolveParticipantUserIds(usernames) {
+  if (!usernames.length) {
+    return { userIds: [], missingUsernames: [] };
+  }
+
+  const { data, error } = await window.supabaseClient
+    .from('user_profiles')
+    .select('user_id, username')
+    .in('username', usernames);
+
+  if (error) {
+    return { userIds: [], missingUsernames: usernames };
+  }
+
+  const rows = Array.isArray(data) ? data : [];
+  const foundMap = new Map(rows.map((row) => [String(row.username || '').toLowerCase(), row.user_id]));
+  const userIds = usernames.map((username) => foundMap.get(username)).filter(Boolean);
+  const missingUsernames = usernames.filter((username) => !foundMap.has(username));
+
+  return {
+    userIds,
+    missingUsernames
+  };
 }
 
 async function uploadTripImageToStorage(file) {

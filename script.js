@@ -21,7 +21,7 @@ async function initTopLeaderboard() {
 
 	const { data: trips, error: tripsError } = await client
 		.from('trips')
-		.select('user_id, trip_length');
+		.select('user_id, participant_user_ids, trip_length');
 
 	if (tripsError) {
 		if (kmList) kmList.innerHTML = '<li class="leaderboard-item">Edetabeli laadimine ebaõnnestus.</li>';
@@ -34,15 +34,26 @@ async function initTopLeaderboard() {
 	const tripsByUser = new Map();
 
 	rows.forEach((trip) => {
-		if (!trip?.user_id) return;
-		const currentTrips = tripsByUser.get(trip.user_id) || 0;
-		tripsByUser.set(trip.user_id, currentTrips + 1);
+		const participantIds = new Set();
+		if (trip?.user_id) participantIds.add(trip.user_id);
+		if (Array.isArray(trip?.participant_user_ids)) {
+			trip.participant_user_ids.filter(Boolean).forEach((id) => participantIds.add(id));
+		}
+		if (!participantIds.size) return;
+
+		participantIds.forEach((participantId) => {
+			const currentTrips = tripsByUser.get(participantId) || 0;
+			tripsByUser.set(participantId, currentTrips + 1);
+		});
 
 		const rawValue = String(trip.trip_length || '').trim().replace(',', '.');
 		const parsedKm = Number.parseFloat(rawValue.replace(/[^\d.]/g, ''));
 		if (!Number.isFinite(parsedKm)) return;
-		const current = kmByUser.get(trip.user_id) || 0;
-		kmByUser.set(trip.user_id, current + parsedKm);
+
+		participantIds.forEach((participantId) => {
+			const current = kmByUser.get(participantId) || 0;
+			kmByUser.set(participantId, current + parsedKm);
+		});
 	});
 
 	if (!tripsByUser.size) {
