@@ -216,14 +216,13 @@ async function deleteGalleryItem(item) {
   setGalleryStatus('Kustutan pilti…', 'loading');
 
   try {
-    const { data, error } = await window.supabaseClient
+    const { error, count } = await window.supabaseClient
       .from('gallery_images')
-      .delete()
-      .eq('id', item.id)
-      .select('id');
+      .delete({ count: 'exact' })
+      .eq('id', item.id);
 
     if (error) throw error;
-    if (!data || !data.length) {
+    if (typeof count === 'number' && count === 0) {
       throw new Error('Pildi kustutamine ebaõnnestus (õigused puuduvad või rida ei leitud).');
     }
 
