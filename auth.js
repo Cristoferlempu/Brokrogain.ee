@@ -116,24 +116,36 @@ function initAuthPage() {
   });
 
   if (openStatsButton && closeStatsButton && statsModal && statsKilometers && statsTripsCount && statsModalStatus) {
-    openStatsButton.addEventListener('click', async () => {
+    const openStatsModal = async () => {
       statsModal.hidden = false;
+      statsModal.style.display = 'grid';
       await loadMyStats(statsKilometers, statsTripsCount, statsModalStatus);
+    };
+
+    const closeStatsModal = () => {
+      statsModal.hidden = true;
+      statsModal.style.display = 'none';
+    };
+
+    openStatsButton.addEventListener('click', async () => {
+      await openStatsModal();
     });
 
-    closeStatsButton.addEventListener('click', () => {
-      statsModal.hidden = true;
+    closeStatsButton.addEventListener('click', (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      closeStatsModal();
     });
 
     statsModal.addEventListener('click', (event) => {
       if (event.target === statsModal) {
-        statsModal.hidden = true;
+        closeStatsModal();
       }
     });
 
     document.addEventListener('keydown', (event) => {
       if (event.key === 'Escape' && !statsModal.hidden) {
-        statsModal.hidden = true;
+        closeStatsModal();
       }
     });
   }
