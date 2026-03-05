@@ -1,0 +1,141 @@
+function initBlogModule() {
+  const form = document.getElementById('blogPostForm');
+  const list = document.getElementById('blogPostsList');
+  const status = document.getElementById('blogStatus');
+
+  if (!form || !list || !status) return;
+
+  loadBlogPosts();
+
+  form.addEventListener('submit', async (event) => {
+    event.preventDefault();
+
+    const payload = {
+      title: readBlogValue('blogTitle'),
+      author_name: readBlogValue('blogAuthorName') || null,
+      excerpt: readBlogValue('blogExcerpt') || null,
+      content: readBlogValue('blogContent')
+    };
+
+    if (!payload.title || !payload.content) {
+      setBlogStatus('Please fill in title and content.', 'error');
+      return;
+    }
+
+    setBlogStatus('Saving…', 'loading');
+
+    try {
+      const { error } = await window.supabaseClient.from('blog_posts').insert([payload]);
+      if (error) throw error;
+
+      form.reset();
+      setBlogStatus('Saved!', 'success');
+      await loadBlogPosts();
+    } catch (error) {
+      console.error(error);
+      setBlogStatus('Something went wrong, please try again.', 'error');
+    }
+  });
+}
+
+async function loadBlogPosts() {
+  const list = document.getElementById('blogPostsList');
+  if (!list) return;
+
+  setBlogStatus('Loading data…', 'loading');
+  list.innerHTML = '';
+
+  try {
+    const { data, error } = await window.supabaseClient
+      .from('blog_posts')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+
+    if (!data || !data.length) {
+      list.innerHTML = '<p class="gallery-loading">No blog posts yet.</p>';
+      setBlogStatus('');
+      return;
+    }
+
+    data.forEach((post) => {
+      const article = document.createElement('article');
+      article.className = 'blog-post';
+
+      const title = document.createElement('h3');
+      title.textContent = post.title;
+
+      const meta = document.createElement('p');
+      meta.className = 'blog-meta';
+      meta.textContent = `${formatBlogDate(post.created_at)}${post.author_name ? ` · ${post.author_name}` : ''}`;
+
+      const excerpt = document.createElement('p');
+      excerpt.textContent = post.excerpt || '';
+
+      const toggleButton = document.createElement('button');
+      toggleButton.type = 'button';
+      toggleButton.className = 'btn blog-toggle';
+      toggleButton.textContent = 'Loe edasi';
+
+      const fullContent = document.createElement('div');
+      fullContent.className = 'blog-full-content';
+      fullContent.hidden = true;
+      fullContent.innerHTML = `<p>${escapeHtml(post.content).replace(/\n/g, '<br>')}</p>`;
+
+      toggleButton.addEventListener('click', () => {
+        const isHidden = fullContent.hidden;
+        fullContent.hidden = !isHidden;
+        toggleButton.textContent = isHidden ? 'Sulge' : 'Loe edasi';
+      });
+
+      article.appendChild(title);
+      article.appendChild(meta);
+      if (post.excerpt) article.appendChild(excerpt);
+      article.appendChild(toggleButton);
+      article.appendChild(fullContent);
+      list.appendChild(article);
+
+      if (window.observeRevealTarget) window.observeRevealTarget(article);
+    });
+
+    setBlogStatus('');
+  } catch (error) {
+    console.error(error);
+    setBlogStatus('Something went wrong, please try again.', 'error');
+  }
+}
+
+function escapeHtml(text) {
+  return String(text)
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#039;');
+}
+
+function readBlogValue(id) {
+  const input = document.getElementById(id);
+  return input ? input.value.trim() : '';
+}
+
+function setBlogStatus(message, type = '') {
+  const status = document.getElementById('blogStatus');
+  if (!status) return;
+  status.textContent = message;
+  status.className = `status-message ${type}`.trim();
+}
+
+function formatBlogDate(value) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return '';
+  return new Intl.DateTimeFormat('et-EE', {
+    day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit'
+  }).format(date);
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  if (!window.supabaseClient) return;
+  initBlogModule();
+});

@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Matk Valgejärvele (märts 2026)</title>
-    <link rel="stylesheet" href="style.css?v=20260305-5">
+    <link rel="stylesheet" href="style.css?v=20260305-6">
 </head>
 <body>
 
@@ -68,16 +68,17 @@
 
     <section class="content-section">
         <h2>Kommentaarid</h2>
-        <form id="feedbackForm" class="feedback-form" data-feedback-key="comments-matk-valgejarv">
-            <label for="feedbackName">Nimi</label>
-            <input id="feedbackName" type="text" placeholder="Sinu nimi" required>
+        <form id="tripCommentForm" class="feedback-form">
+            <label for="tripCommentName">Nimi</label>
+            <input id="tripCommentName" type="text" placeholder="Sinu nimi" required>
 
-            <label for="feedbackMessage">Kommentaar</label>
-            <textarea id="feedbackMessage" rows="4" placeholder="Jaga oma kogemust" required></textarea>
+            <label for="tripCommentText">Kommentaar</label>
+            <textarea id="tripCommentText" rows="4" placeholder="Jaga oma kogemust" required></textarea>
 
             <button type="submit">Lisa kommentaar</button>
         </form>
-        <ul id="feedbackList" class="feedback-list" aria-live="polite"></ul>
+        <p id="tripCommentsStatus" class="status-message" aria-live="polite"></p>
+        <ul id="tripCommentsList" class="feedback-list" aria-live="polite"></ul>
     </section>
 </main>
 
@@ -86,6 +87,9 @@
     <p><a href="mailto:info@matkagrupp.ee">Kirjuta meile</a> või <a href="#">jää jälgijaks</a></p>
 </footer>
 
-<script src="script.js?v=20260305-3"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="script.js?v=20260305-4"></script>
+<script src="supabaseClient.js"></script>
+<script src="comments.js"></script>
 </body>
 </html>

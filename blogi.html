@@ -4,7 +4,7 @@
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title>Blogi - Matkagrupp Eesti</title>
-	<link rel="stylesheet" href="style.css?v=20260305-5">
+	<link rel="stylesheet" href="style.css?v=20260305-6">
 </head>
 <body>
 
@@ -28,17 +28,28 @@
 
 <main>
 	<section class="content-section">
-		<h2>Kirjuta oma kogemusest</h2>
-		<form id="feedbackForm" class="feedback-form" data-feedback-key="comments-blogi">
-			<label for="feedbackName">Nimi</label>
-			<input id="feedbackName" type="text" placeholder="Sinu nimi" required>
+		<h2>Blogi postitused</h2>
+		<form id="blogPostForm" class="feedback-form">
+			<label for="blogTitle">Pealkiri</label>
+			<input id="blogTitle" type="text" placeholder="Postituse pealkiri" required>
 
-			<label for="feedbackMessage">Kommentaar</label>
-			<textarea id="feedbackMessage" placeholder="Kirjuta midagi ilusat!" rows="4" required></textarea>
+			<label for="blogAuthorName">Autor</label>
+			<input id="blogAuthorName" type="text" placeholder="Autori nimi">
 
-			<button type="submit">Lisa kommentaar</button>
+			<label for="blogExcerpt">Lühitutvustus</label>
+			<textarea id="blogExcerpt" rows="2" placeholder="Lühike sissejuhatus"></textarea>
+
+			<label for="blogContent">Sisu</label>
+			<textarea id="blogContent" placeholder="Kirjuta postituse sisu" rows="6" required></textarea>
+
+			<button type="submit">Lisa postitus</button>
 		</form>
-		<ul id="feedbackList" class="feedback-list" aria-live="polite"></ul>
+		<p id="blogStatus" class="status-message" aria-live="polite"></p>
+	</section>
+
+	<section class="content-section">
+		<h2>Viimased postitused</h2>
+		<div id="blogPostsList" class="blog-posts-list" aria-live="polite"></div>
 	</section>
 </main>
 
@@ -47,6 +58,9 @@
 	<p><a href="mailto:info@matkagrupp.ee">Kirjuta meile</a> või <a href="#">jää jälgijaks</a></p>
 </footer>
 
-<script src="script.js?v=20260305-3"></script>
+	<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+	<script src="script.js?v=20260305-4"></script>
+	<script src="supabaseClient.js"></script>
+	<script src="blog.js"></script>
 </body>
 </html>

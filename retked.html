@@ -4,7 +4,7 @@
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title>Retked - Matkagrupp Eesti</title>
-	<link rel="stylesheet" href="style.css?v=20260305-5">
+	<link rel="stylesheet" href="style.css?v=20260305-6">
 </head>
 <body>
 
@@ -35,35 +35,16 @@
 		<h2>Retked</h2>
 		<p>Siin on kõik meie seni kirja pandud matkad koos marsruudi, raskuse ja kestusega.</p>
 
-		<div class="upload-form">
-			<input type="date" id="hikeDate">
-			<input type="text" id="hikeDistance" placeholder="Kaugus (km)">
-			<input type="text" id="hikeDuration" placeholder="Kestus (nt 3 h 10 min)">
-			<input type="text" id="hikeDifficulty" placeholder="Raskusaste">
-			<input type="text" id="hikeRoute" placeholder="Marsruut (nt ringrada)">
-			<input type="text" id="hikeSummary" placeholder="Lühikirjeldus">
-			<input type="text" id="hikeLocation" placeholder="Asukoht (näit. Valgejärv)" autocomplete="off">
-			<button id="addHikeButton" type="button">Lisa retk</button>
-		</div>
-		<p id="hikeStatus"></p>
+		<form id="tripForm" class="upload-form">
+			<input type="text" id="tripTitle" placeholder="Retke pealkiri" required>
+			<input type="date" id="tripDate">
+			<input type="text" id="tripLocation" placeholder="Asukoht (näit. Valgejärv)">
+			<textarea id="tripDescription" placeholder="Lühikirjeldus" rows="3" required></textarea>
+			<button type="submit">Lisa retk</button>
+		</form>
+		<p id="tripsStatus" class="status-message" aria-live="polite"></p>
 
-		<div class="card-container" id="hikesContainer">
-			<div class="card">
-				<img src="img/valgejarv.jpg" alt="Matk Valgejärvele" class="card-image" loading="lazy" decoding="async">
-				<div class="card-content">
-					<h3>Matk Valgejärvele</h3>
-					<div class="card-meta">
-						<span>🧭 Marsruut: Rabamatk</span>
-						<span>📍 8,5 km</span>
-						<span>📅 01. märts 2026</span>
-						<span>⏱️ 2 h 30 min</span>
-						<span>⭐ Lihtne–keskmine</span>
-					</div>
-					<p>Mõnus pühapäevane matk looduses</p>
-					<a href="matk-valgejarvele.html">Ava retkepäevik →</a>
-				</div>
-			</div>
-		</div>
+		<div class="card-container" id="tripsList" aria-live="polite"></div>
 	</section>
 </main>
 
@@ -72,6 +53,9 @@
 	<p><a href="mailto:info@brokrogain.ee">Kirjuta meile</a> või <a href="#">jää jälgijaks</a></p>
 </footer>
 
-	<script src="script.js?v=20260305-3"></script>
+	<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+	<script src="script.js?v=20260305-4"></script>
+	<script src="supabaseClient.js"></script>
+	<script src="trips.js"></script>
 </body>
 </html>
