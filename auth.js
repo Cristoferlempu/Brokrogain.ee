@@ -4,13 +4,16 @@ function initAuthPage() {
   const logoutButton = document.getElementById('logoutButton');
   const status = document.getElementById('authStatus');
   const currentUser = document.getElementById('currentUser');
+  const registerSection = document.getElementById('registerSection');
+  const loginSection = document.getElementById('loginSection');
+  const logoutSection = document.getElementById('logoutSection');
 
-  if (!registerForm || !loginForm || !logoutButton || !status || !currentUser) return;
+  if (!registerForm || !loginForm || !logoutButton || !status || !currentUser || !registerSection || !loginSection || !logoutSection) return;
 
-  refreshAuthState(currentUser, status);
+  refreshAuthState(currentUser, status, registerSection, loginSection, logoutSection);
 
   window.supabaseClient.auth.onAuthStateChange(() => {
-    refreshAuthState(currentUser, status);
+    refreshAuthState(currentUser, status, registerSection, loginSection, logoutSection);
   });
 
   registerForm.addEventListener('submit', async (event) => {
@@ -77,25 +80,34 @@ function initAuthPage() {
   });
 }
 
-async function refreshAuthState(currentUser, statusElement) {
+async function refreshAuthState(currentUser, statusElement, registerSection, loginSection, logoutSection) {
   const { data, error } = await window.supabaseClient.auth.getUser();
 
   if (error) {
     setAuthStatus(error.message, 'error');
     currentUser.textContent = 'Pole sisse logitud';
+    setAuthSections(false, registerSection, loginSection, logoutSection);
     return;
   }
 
   if (!data.user) {
     currentUser.textContent = 'Pole sisse logitud';
+    setAuthSections(false, registerSection, loginSection, logoutSection);
     if (!statusElement.textContent) setAuthStatus('Logi sisse või loo konto.', 'info');
     return;
   }
 
   currentUser.textContent = `Sisse logitud: ${data.user.email}`;
+  setAuthSections(true, registerSection, loginSection, logoutSection);
   if (!statusElement.textContent || statusElement.className.includes('info')) {
     setAuthStatus('Autentimine aktiivne.', 'success');
   }
+}
+
+function setAuthSections(isLoggedIn, registerSection, loginSection, logoutSection) {
+  registerSection.hidden = isLoggedIn;
+  loginSection.hidden = isLoggedIn;
+  logoutSection.hidden = !isLoggedIn;
 }
 
 function readValue(id) {

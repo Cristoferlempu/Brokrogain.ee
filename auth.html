@@ -34,7 +34,7 @@
     <p id="authStatus" class="status-message" aria-live="polite"></p>
   </section>
 
-  <section class="content-section">
+  <section class="content-section" id="registerSection">
     <h2>Loo konto</h2>
     <form id="registerForm" class="feedback-form">
       <label for="registerEmail">Email</label>
@@ -47,7 +47,7 @@
     </form>
   </section>
 
-  <section class="content-section">
+  <section class="content-section" id="loginSection">
     <h2>Logi sisse</h2>
     <form id="loginForm" class="feedback-form">
       <label for="loginEmail">Email</label>
@@ -58,6 +58,10 @@
 
       <button type="submit">Logi sisse</button>
     </form>
+  </section>
+
+  <section class="content-section" id="logoutSection">
+    <h2>Väljalogimine</h2>
     <button id="logoutButton" class="btn" type="button">Logi välja</button>
   </section>
 </main>
@@ -70,6 +74,6 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="script.js?v=20260305-4"></script>
 <script src="supabaseClient.js?v=20260305-1"></script>
-<script src="auth.js"></script>
+<script src="auth.js?v=20260305-2"></script>
 </body>
 </html>
