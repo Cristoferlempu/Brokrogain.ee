@@ -121,7 +121,7 @@ async function setupTripsAuth(form, authHint) {
 
     if (authHint) {
       authHint.textContent = isLoggedIn
-        ? `Sisse logitud: ${user.email}`
+        ? 'Võid retke lisada.'
         : 'Retke lisamiseks logi sisse.';
       authHint.className = `status-message ${isLoggedIn ? 'success' : 'info'}`;
     }

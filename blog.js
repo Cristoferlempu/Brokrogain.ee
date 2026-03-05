@@ -55,7 +55,7 @@ async function setupBlogAuth(form, authHint) {
 
     if (authHint) {
       authHint.textContent = isLoggedIn
-        ? `Sisse logitud: ${user.email}`
+        ? 'Võid postituse lisada.'
         : 'Postituse lisamiseks logi sisse.';
       authHint.className = `status-message ${isLoggedIn ? 'success' : 'info'}`;
     }

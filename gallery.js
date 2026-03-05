@@ -75,7 +75,7 @@ async function setupGalleryAuth(form, authHint) {
 
     if (authHint) {
       authHint.textContent = isLoggedIn
-        ? `Sisse logitud: ${user.email}`
+        ? 'Võid pildi lisada.'
         : 'Pildi lisamiseks logi sisse.';
       authHint.className = `status-message ${isLoggedIn ? 'success' : 'info'}`;
     }
