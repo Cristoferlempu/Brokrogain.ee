@@ -8,8 +8,6 @@ function initAuthPage() {
   const currentUser = document.getElementById('currentUser');
   const registerSection = document.getElementById('registerSection');
   const loginSection = document.getElementById('loginSection');
-  const resetSection = document.getElementById('resetSection');
-  const resetPasswordForm = document.getElementById('resetPasswordForm');
   const logoutSection = document.getElementById('logoutSection');
   const openStatsButton = document.getElementById('openStatsButton');
   const closeStatsButton = document.getElementById('closeStatsButton');
@@ -22,8 +20,6 @@ function initAuthPage() {
 
   refreshAuthState(currentUser, status, registerSection, loginSection, logoutSection);
   showResetSuccessNotice(registerSection, loginSection, logoutSection);
-
-  handleRecoveryCallback(resetSection, resetPasswordForm, registerSection, loginSection, logoutSection);
 
   window.supabaseClient.auth.onAuthStateChange(() => {
     refreshAuthState(currentUser, status, registerSection, loginSection, logoutSection);
@@ -162,44 +158,6 @@ function initAuthPage() {
     }
   });
 
-  if (resetPasswordForm) {
-    resetPasswordForm.addEventListener('submit', async (event) => {
-      event.preventDefault();
-
-      const newPassword = readValue('resetPassword');
-      const confirmPassword = readValue('resetPasswordConfirm');
-
-      if (!newPassword || !confirmPassword) {
-        setAuthStatus('Sisesta uus parool mõlemasse välja.', 'error');
-        return;
-      }
-
-      if (newPassword.length < 6) {
-        setAuthStatus('Parool peab olema vähemalt 6 märki.', 'error');
-        return;
-      }
-
-      if (newPassword !== confirmPassword) {
-        setAuthStatus('Paroolid ei kattu.', 'error');
-        return;
-      }
-
-      setAuthStatus('Uuendan parooli…', 'loading');
-      const { error } = await window.supabaseClient.auth.updateUser({ password: newPassword });
-
-      if (error) {
-        setAuthStatus(error.message, 'error');
-        return;
-      }
-
-      resetPasswordForm.reset();
-      clearRecoveryParamsFromUrl();
-      setAuthStatus('Parool uuendatud. Nüüd saad sisse logida uue parooliga.', 'success');
-      if (resetSection) resetSection.hidden = true;
-      setAuthSections(false, registerSection, loginSection, logoutSection);
-    });
-  }
-
   logoutButton.addEventListener('click', async () => {
     setAuthStatus('Log out…', 'loading');
     const { error } = await window.supabaseClient.auth.signOut();
@@ -253,44 +211,6 @@ function initAuthPage() {
 function getRecoveryRedirectUrl() {
   const liveAuthUrl = 'https://cristoferlempu.github.io/Brokrogain.ee/reset-password.html';
   return liveAuthUrl;
-}
-
-async function handleRecoveryCallback(resetSection, resetPasswordForm, registerSection, loginSection, logoutSection) {
-  const hashParams = new URLSearchParams((window.location.hash || '').replace(/^#/, ''));
-  const queryParams = new URLSearchParams(window.location.search);
-
-  const type = hashParams.get('type') || queryParams.get('type');
-  const accessToken = hashParams.get('access_token');
-  const refreshToken = hashParams.get('refresh_token');
-  const isRecovery = type === 'recovery' || Boolean(accessToken && refreshToken);
-
-  if (!isRecovery) {
-    if (resetSection) resetSection.hidden = true;
-    return;
-  }
-
-  if (accessToken && refreshToken) {
-    const { error } = await window.supabaseClient.auth.setSession({
-      access_token: accessToken,
-      refresh_token: refreshToken
-    });
-
-    if (error) {
-      setAuthStatus('Taastelink on vigane või aegunud. Küsi uus link.', 'error');
-      if (resetSection) resetSection.hidden = true;
-      return;
-    }
-  }
-
-  if (resetSection) resetSection.hidden = false;
-  if (resetPasswordForm) resetPasswordForm.reset();
-  setAuthSections(false, registerSection, loginSection, logoutSection);
-  setAuthStatus('Taastelink avatud. Sisesta uus parool.', 'info');
-}
-
-function clearRecoveryParamsFromUrl() {
-  const cleanPath = `${window.location.origin}${window.location.pathname}`;
-  window.history.replaceState({}, document.title, cleanPath);
 }
 
 function showResetSuccessNotice(registerSection, loginSection, logoutSection) {
