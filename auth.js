@@ -225,7 +225,7 @@ function initAuthPage() {
 }
 
 function getRecoveryRedirectUrl() {
-  const liveAuthUrl = 'https://cristoferlempu.github.io/Brokrogain.ee/auth.html';
+  const liveAuthUrl = 'https://cristoferlempu.github.io/Brokrogain.ee/reset-password.html';
   return liveAuthUrl;
 }
 
