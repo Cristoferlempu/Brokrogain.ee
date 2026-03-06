@@ -1,6 +1,7 @@
 function initAuthPage() {
   const registerForm = document.getElementById('registerForm');
   const loginForm = document.getElementById('loginForm');
+  const recoveryForm = document.getElementById('recoveryForm');
   const logoutButton = document.getElementById('logoutButton');
   const status = document.getElementById('authStatus');
   const currentUser = document.getElementById('currentUser');
@@ -14,7 +15,7 @@ function initAuthPage() {
   const statsTripsCount = document.getElementById('statsTripsCount');
   const statsModalStatus = document.getElementById('statsModalStatus');
 
-  if (!registerForm || !loginForm || !logoutButton || !status || !currentUser || !registerSection || !loginSection || !logoutSection) return;
+  if (!registerForm || !loginForm || !recoveryForm || !logoutButton || !status || !currentUser || !registerSection || !loginSection || !logoutSection) return;
 
   refreshAuthState(currentUser, status, registerSection, loginSection, logoutSection);
 
@@ -72,18 +73,18 @@ function initAuthPage() {
   loginForm.addEventListener('submit', async (event) => {
     event.preventDefault();
 
-    const username = normalizeUsername(readValue('loginUsername'));
+    const identity = readValue('loginUsername');
     const password = readValue('loginPassword');
 
-    if (!username || !password) {
-      setAuthStatus('Täida username ja parool.', 'error');
+    if (!identity || !password) {
+      setAuthStatus('Täida username/email ja parool.', 'error');
       return;
     }
 
     setAuthStatus('Login…', 'loading');
-    const email = await getEmailByUsername(username);
+    const email = await resolveEmailFromIdentity(identity);
     if (!email) {
-      setAuthStatus('Selle username-ga kontot ei leitud.', 'error');
+      setAuthStatus('Selle username/emailiga kontot ei leitud.', 'error');
       return;
     }
 
@@ -101,6 +102,34 @@ function initAuthPage() {
     if (next) {
       window.location.href = next;
     }
+  });
+
+  recoveryForm.addEventListener('submit', async (event) => {
+    event.preventDefault();
+
+    const identity = readValue('recoveryIdentity');
+    if (!identity) {
+      setAuthStatus('Sisesta username või email.', 'error');
+      return;
+    }
+
+    setAuthStatus('Saadan taastelinki…', 'loading');
+    const email = await resolveEmailFromIdentity(identity);
+    if (!email) {
+      setAuthStatus('Selle username/emailiga kontot ei leitud.', 'error');
+      return;
+    }
+
+    const redirectTo = `${window.location.origin}${window.location.pathname}`;
+    const { error } = await window.supabaseClient.auth.resetPasswordForEmail(email, { redirectTo });
+
+    if (error) {
+      setAuthStatus(error.message, 'error');
+      return;
+    }
+
+    recoveryForm.reset();
+    setAuthStatus('Taastelink saadeti sinu emailile.', 'success');
   });
 
   logoutButton.addEventListener('click', async () => {
@@ -239,6 +268,13 @@ async function getEmailByUsername(username) {
   }
 
   return data?.email || null;
+}
+
+async function resolveEmailFromIdentity(identity) {
+  const value = String(identity || '').trim().toLowerCase();
+  if (!value) return null;
+  if (value.includes('@')) return value;
+  return getEmailByUsername(normalizeUsername(value));
 }
 
 async function getUsernameByUserId(userId) {

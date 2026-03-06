@@ -53,13 +53,20 @@
   <section class="content-section" id="loginSection">
     <h2>Logi sisse</h2>
     <form id="loginForm" class="feedback-form">
-      <label for="loginUsername">Username</label>
-      <input id="loginUsername" type="text" placeholder="Sinu kasutajanimi" required>
+      <label for="loginUsername">Username või email</label>
+      <input id="loginUsername" type="text" placeholder="Sinu kasutajanimi või email" required>
 
       <label for="loginPassword">Parool</label>
       <input id="loginPassword" type="password" placeholder="Parool" required>
 
       <button type="submit">Logi sisse</button>
+    </form>
+
+    <h3>Unustasid konto andmed?</h3>
+    <form id="recoveryForm" class="feedback-form">
+      <label for="recoveryIdentity">Username või email</label>
+      <input id="recoveryIdentity" type="text" placeholder="Sisesta username või email" required>
+      <button type="submit">Saada taastelink emailile</button>
     </form>
   </section>
 
@@ -88,6 +95,6 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="script.js?v=20260305-6"></script>
 <script src="supabaseClient.js?v=20260305-2"></script>
-<script src="auth.js?v=20260305-10"></script>
+<script src="auth.js?v=20260306-2"></script>
 </body>
 </html>
