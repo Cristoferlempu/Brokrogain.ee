@@ -226,16 +226,7 @@ function initAuthPage() {
 
 function getRecoveryRedirectUrl() {
   const liveAuthUrl = 'https://cristoferlempu.github.io/Brokrogain.ee/auth.html';
-
-  if (!window.location || !window.location.origin || window.location.origin === 'null') {
-    return liveAuthUrl;
-  }
-
-  if (window.location.hostname.endsWith('github.io')) {
-    return liveAuthUrl;
-  }
-
-  return `${window.location.origin}${window.location.pathname}`;
+  return liveAuthUrl;
 }
 
 async function handleRecoveryCallback(resetSection, resetPasswordForm, registerSection, loginSection, logoutSection) {
