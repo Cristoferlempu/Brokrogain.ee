@@ -157,7 +157,7 @@ main {
     background-color: #1B4332;
     background-image:
         linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)),
-        url('img/taustapilt.jpg?v=2');
+        url('hero.jpg?v=1');
     background-repeat: no-repeat;
     background-size: cover;
     background-position: center;
@@ -800,7 +800,7 @@ body.dark-mode .home-hero {
     background-color: #1B4332;
     background-image:
         linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)),
-        url('img/taustapilt.jpg?v=2');
+        url('hero.jpg?v=1');
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
