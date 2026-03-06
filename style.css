@@ -123,6 +123,10 @@ main {
     padding: 40px 20px 56px;
 }
 
+body.home-page main {
+    padding: 40px 0 56px;
+}
+
 .welcome,
 .content-section {
     background: #fff;
