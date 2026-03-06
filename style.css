@@ -792,6 +792,17 @@ body.dark-mode .leaderboard-item {
     border-color: var(--border-soft);
 }
 
+body.dark-mode .home-hero {
+    background-color: #1B4332;
+    background-image:
+        linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)),
+        url('img/taustapilt.jpg?v=2');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    color: #fff;
+}
+
 body.dark-mode .tag-suggestions {
     background: var(--bg-surface);
     border-color: var(--border-soft);
