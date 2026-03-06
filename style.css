@@ -150,9 +150,11 @@ main {
     justify-content: center;
     align-items: center;
     text-align: center;
-    background:
+    background-color: #1B4332;
+    background-image:
         linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)),
-        url("img/taustapilt.jpg");
+        url('img/taustapilt.jpg?v=2');
+    background-repeat: no-repeat;
     background-size: cover;
     background-position: center;
     color: white;
