@@ -88,7 +88,7 @@ async function initResetPasswordPage() {
     form.reset();
     setResetStatus('Parool uuendatud. Võid nüüd sisse logida konto lehel.', 'success');
     setTimeout(() => {
-      window.location.href = 'auth.html';
+      window.location.href = 'auth.html?reset=success';
     }, 1200);
   });
 }

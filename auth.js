@@ -20,6 +20,7 @@ function initAuthPage() {
   if (!registerForm || !loginForm || !recoveryForm || !logoutButton || !status || !currentUser || !registerSection || !loginSection || !logoutSection) return;
 
   refreshAuthState(currentUser, status, registerSection, loginSection, logoutSection);
+  showResetSuccessNotice(registerSection, loginSection, logoutSection);
 
   handleRecoveryCallback(resetSection, resetPasswordForm, registerSection, loginSection, logoutSection);
 
@@ -265,6 +266,21 @@ async function handleRecoveryCallback(resetSection, resetPasswordForm, registerS
 function clearRecoveryParamsFromUrl() {
   const cleanPath = `${window.location.origin}${window.location.pathname}`;
   window.history.replaceState({}, document.title, cleanPath);
+}
+
+function showResetSuccessNotice(registerSection, loginSection, logoutSection) {
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('reset') !== 'success') return;
+
+  setAuthStatus('Parool uuendatud. Logi sisse uue parooliga.', 'success');
+  setAuthSections(false, registerSection, loginSection, logoutSection);
+
+  params.delete('reset');
+  const query = params.toString();
+  const cleanUrl = query
+    ? `${window.location.pathname}?${query}`
+    : window.location.pathname;
+  window.history.replaceState({}, document.title, cleanUrl);
 }
 
 async function loadMyStats(kmElement, countElement, statusElement) {
