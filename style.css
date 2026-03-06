@@ -138,6 +138,12 @@ main {
 }
 
 .home-hero {
+    width: 100%;
+    max-width: none;
+    margin: 0;
+    border-left: none;
+    border-radius: 0;
+    box-shadow: none;
     min-height: 80vh;
     display: flex;
     flex-direction: column;
