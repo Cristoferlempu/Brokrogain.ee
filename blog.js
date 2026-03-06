@@ -20,6 +20,7 @@ function initBlogModule() {
     }
 
     const payload = {
+      user_id: user.id,
       title: readBlogValue('blogTitle'),
       author_name: username || readBlogValue('blogAuthorName') || null,
       content: readBlogValue('blogContent')
@@ -41,6 +42,10 @@ function initBlogModule() {
       await loadBlogPosts();
     } catch (error) {
       console.error(error);
+      if (String(error.message || '').includes('user_id')) {
+        setBlogStatus('Lisa Supabase SQL Editoris: alter table public.blog_posts add column if not exists user_id uuid references auth.users(id) on delete set null;', 'error');
+        return;
+      }
       setBlogStatus('Something went wrong, please try again.', 'error');
     }
   });
@@ -112,13 +117,15 @@ async function loadBlogPosts() {
   list.innerHTML = '';
 
   try {
+    const currentUser = await getCurrentUser();
+    const canModerate = await isModeratorUser();
+
     const { data, error } = await window.supabaseClient
       .from('blog_posts')
       .select('*')
       .order('created_at', { ascending: false });
 
     if (error) throw error;
-    const canModerate = await isModeratorUser();
 
     if (!data || !data.length) {
       list.innerHTML = '<p class="gallery-loading">No blog posts yet.</p>';
@@ -158,14 +165,24 @@ async function loadBlogPosts() {
       article.appendChild(toggleButton);
       article.appendChild(fullContent);
 
-      if (canModerate) {
+      const isOwner = Boolean(currentUser?.id && post?.user_id && currentUser.id === post.user_id);
+      if (isOwner || canModerate) {
+        const editButton = document.createElement('button');
+        editButton.type = 'button';
+        editButton.className = 'btn btn-secondary';
+        editButton.textContent = 'Muuda';
+        editButton.addEventListener('click', async () => {
+          await editBlogPost(post, currentUser?.id || null, canModerate);
+        });
+
         const deleteButton = document.createElement('button');
         deleteButton.type = 'button';
         deleteButton.className = 'btn btn-danger';
         deleteButton.textContent = 'Kustuta';
         deleteButton.addEventListener('click', async () => {
-          await deleteBlogPost(post.id);
+          await deleteBlogPost(post.id, currentUser?.id || null, canModerate);
         });
+        article.appendChild(editButton);
         article.appendChild(deleteButton);
       }
 
@@ -181,18 +198,72 @@ async function loadBlogPosts() {
   }
 }
 
-async function deleteBlogPost(postId) {
+async function editBlogPost(post, userId, canModerate = false) {
+  if (!post?.id || !userId) return;
+
+  const nextTitle = window.prompt('Muuda pealkirja:', post.title || '');
+  if (nextTitle === null) return;
+
+  const nextContent = window.prompt('Muuda sisu:', post.content || '');
+  if (nextContent === null) return;
+
+  const title = String(nextTitle).trim();
+  const content = String(nextContent).trim();
+
+  if (!title || !content) {
+    setBlogStatus('Pealkiri ja sisu on kohustuslikud.', 'error');
+    return;
+  }
+
+  setBlogStatus('Uuendan postitust…', 'loading');
+
+  try {
+    let query = window.supabaseClient
+      .from('blog_posts')
+      .update({ title, content })
+      .eq('id', post.id);
+
+    if (!canModerate) {
+      query = query.eq('user_id', userId);
+    }
+
+    const { data, error } = await query.select('id');
+
+    if (error) throw error;
+    if (!data || !data.length) {
+      throw new Error('Postituse uuendamine ebaõnnestus (õigused puuduvad või rida ei leitud).');
+    }
+
+    setBlogStatus('Postitus uuendatud.', 'success');
+    await loadBlogPosts();
+  } catch (error) {
+    console.error(error);
+    setBlogStatus('Uuendamine ebaõnnestus. Muuta saab oma postitusi (moderaator saab kõiki).', 'error');
+  }
+}
+
+async function deleteBlogPost(postId, userId, canModerate = false) {
   if (!postId) return;
+  if (!userId) {
+    setBlogStatus('Logi sisse, et oma postitust kustutada.', 'error');
+    return;
+  }
   const confirmed = window.confirm('Kas kustutan selle blogipostituse?');
   if (!confirmed) return;
 
   setBlogStatus('Kustutan postitust…', 'loading');
 
   try {
-    const { error, count } = await window.supabaseClient
+    let query = window.supabaseClient
       .from('blog_posts')
       .delete({ count: 'exact' })
       .eq('id', postId);
+
+    if (!canModerate) {
+      query = query.eq('user_id', userId);
+    }
+
+    const { error, count } = await query;
 
     if (error) throw error;
     if (typeof count === 'number' && count === 0) {
@@ -203,7 +274,7 @@ async function deleteBlogPost(postId) {
     await loadBlogPosts();
   } catch (error) {
     console.error(error);
-    setBlogStatus('Kustutamine ebaõnnestus. Kontrolli moderaatori õiguseid.', 'error');
+    setBlogStatus('Kustutamine ebaõnnestus. Kustutada saab oma postitusi (moderaator saab kõiki).', 'error');
   }
 }
 

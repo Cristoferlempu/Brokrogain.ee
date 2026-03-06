@@ -306,6 +306,9 @@ async function loadTrips() {
   list.innerHTML = '';
 
   try {
+    const currentUser = await getCurrentUser();
+    const canModerate = await isModeratorUser();
+
     const { data, error } = await window.supabaseClient
       .from('trips')
       .select('*')
@@ -313,7 +316,6 @@ async function loadTrips() {
       .order('created_at', { ascending: false });
 
     if (error) throw error;
-    const canModerate = await isModeratorUser();
 
     if (!data || !data.length) {
       list.innerHTML = '<p class="gallery-loading">No trips yet.</p>';
@@ -351,14 +353,24 @@ async function loadTrips() {
       content.appendChild(meta);
       content.appendChild(desc);
 
-      if (canModerate) {
+      const isOwner = Boolean(currentUser?.id && trip?.user_id && currentUser.id === trip.user_id);
+      if (isOwner || canModerate) {
+        const editButton = document.createElement('button');
+        editButton.type = 'button';
+        editButton.className = 'btn btn-secondary';
+        editButton.textContent = 'Muuda';
+        editButton.addEventListener('click', async () => {
+          await editTrip(trip, currentUser?.id || null, canModerate);
+        });
+
         const deleteButton = document.createElement('button');
         deleteButton.type = 'button';
         deleteButton.className = 'btn btn-danger';
         deleteButton.textContent = 'Kustuta';
         deleteButton.addEventListener('click', async () => {
-          await deleteTrip(trip);
+          await deleteTrip(trip, currentUser?.id || null, canModerate);
         });
+        content.appendChild(editButton);
         content.appendChild(deleteButton);
       }
 
@@ -384,19 +396,93 @@ function getStoragePathFromPublicUrl(url) {
   return decodeURIComponent(url.slice(index + marker.length));
 }
 
-async function deleteTrip(trip) {
+async function editTrip(trip, userId, canModerate = false) {
+  if (!trip?.id || !userId) {
+    setTripsStatus('Logi sisse, et oma retke muuta.', 'error');
+    return;
+  }
+
+  const titleInput = window.prompt('Muuda retke pealkirja:', trip.title || '');
+  if (titleInput === null) return;
+  const dateInput = window.prompt('Muuda kuupäeva (YYYY-MM-DD):', trip.date || '');
+  if (dateInput === null) return;
+  const locationInput = window.prompt('Muuda asukohta:', trip.location || '');
+  if (locationInput === null) return;
+  const lengthInput = window.prompt('Muuda retke pikkust (km):', trip.trip_length || '');
+  if (lengthInput === null) return;
+  const descriptionInput = window.prompt('Muuda kirjeldust:', trip.description || '');
+  if (descriptionInput === null) return;
+
+  const title = String(titleInput).trim();
+  const date = String(dateInput).trim() || null;
+  const location = String(locationInput).trim() || null;
+  const description = String(descriptionInput).trim();
+  const rawLength = String(lengthInput).trim();
+
+  if (!title || !description) {
+    setTripsStatus('Pealkiri ja kirjeldus on kohustuslikud.', 'error');
+    return;
+  }
+
+  let trip_length = null;
+  if (rawLength) {
+    const parsedLength = Number.parseFloat(rawLength.replace(',', '.'));
+    if (!Number.isFinite(parsedLength)) {
+      setTripsStatus('Retke pikkus peab olema number.', 'error');
+      return;
+    }
+    trip_length = String(parsedLength);
+  }
+
+  setTripsStatus('Uuendan retke…', 'loading');
+
+  try {
+    let query = window.supabaseClient
+      .from('trips')
+      .update({ title, date, location, trip_length, description })
+      .eq('id', trip.id);
+
+    if (!canModerate) {
+      query = query.eq('user_id', userId);
+    }
+
+    const { data, error } = await query.select('id');
+
+    if (error) throw error;
+    if (!data || !data.length) {
+      throw new Error('Retke uuendamine ebaõnnestus (õigused puuduvad või rida ei leitud).');
+    }
+
+    setTripsStatus('Retk uuendatud.', 'success');
+    await loadTrips();
+  } catch (error) {
+    console.error(error);
+    setTripsStatus('Uuendamine ebaõnnestus. Muuta saab oma retki (moderaator saab kõiki).', 'error');
+  }
+}
+
+async function deleteTrip(trip, userId, canModerate = false) {
   if (!trip || !trip.id) return;
+  if (!userId) {
+    setTripsStatus('Logi sisse, et oma retke kustutada.', 'error');
+    return;
+  }
   const confirmed = window.confirm('Kas kustutan selle retke?');
   if (!confirmed) return;
 
   setTripsStatus('Kustutan retke…', 'loading');
 
   try {
-    const { data, error } = await window.supabaseClient
+    let query = window.supabaseClient
       .from('trips')
       .delete()
-      .eq('id', trip.id)
-      .select('id');
+      .eq('id', trip.id);
+
+    if (!canModerate) {
+      query = query.eq('user_id', userId);
+    }
+
+    const { data, error } = await query.select('id');
 
     if (error) throw error;
     if (!data || !data.length) {
@@ -415,7 +501,7 @@ async function deleteTrip(trip) {
     await loadTrips();
   } catch (error) {
     console.error(error);
-    setTripsStatus('Kustutamine ebaõnnestus. Kontrolli moderaatori õiguseid.', 'error');
+    setTripsStatus('Kustutamine ebaõnnestus. Kustutada saab oma retki (moderaator saab kõiki).', 'error');
   }
 }
 

@@ -10,7 +10,9 @@ document.addEventListener('DOMContentLoaded', () => {
 async function initTopLeaderboard() {
 	const kmList = document.getElementById('leaderboardListKm') || document.getElementById('leaderboardList');
 	const tripsList = document.getElementById('leaderboardListTrips');
-	if (!kmList && !tripsList) return;
+	const totalTripsStat = document.getElementById('totalTripsStat');
+	const totalDistanceStat = document.getElementById('totalDistanceStat');
+	if (!kmList && !tripsList && !totalTripsStat && !totalDistanceStat) return;
 
 	const client = await waitForSupabaseClient();
 	if (!client) {
@@ -24,12 +26,16 @@ async function initTopLeaderboard() {
 		.select('user_id, participant_user_ids, trip_length');
 
 	if (tripsError) {
+		if (totalTripsStat) totalTripsStat.textContent = '—';
+		if (totalDistanceStat) totalDistanceStat.textContent = '— km';
 		if (kmList) kmList.innerHTML = '<li class="leaderboard-item">Edetabeli laadimine ebaõnnestus.</li>';
 		if (tripsList) tripsList.innerHTML = '<li class="leaderboard-item">Edetabeli laadimine ebaõnnestus.</li>';
 		return;
 	}
 
 	const rows = Array.isArray(trips) ? trips : [];
+	renderTotalTripsStat(totalTripsStat, rows);
+	renderTotalDistanceStat(totalDistanceStat, rows);
 	const kmByUser = new Map();
 	const tripsByUser = new Map();
 
@@ -46,8 +52,7 @@ async function initTopLeaderboard() {
 			tripsByUser.set(participantId, currentTrips + 1);
 		});
 
-		const rawValue = String(trip.trip_length || '').trim().replace(',', '.');
-		const parsedKm = Number.parseFloat(rawValue.replace(/[^\d.]/g, ''));
+		const parsedKm = parseTripLengthToKm(trip?.trip_length);
 		if (!Number.isFinite(parsedKm)) return;
 
 		participantIds.forEach((participantId) => {
@@ -90,6 +95,30 @@ async function initTopLeaderboard() {
 			.slice(0, 5);
 		renderLeaderboard(tripsList, topByTrips, (entry) => `${entry.tripCount} retke`);
 	}
+}
+
+function renderTotalTripsStat(element, trips) {
+	if (!element) return;
+	const totalTrips = Array.isArray(trips) ? trips.length : 0;
+	element.textContent = totalTrips.toLocaleString('et-EE');
+}
+
+function renderTotalDistanceStat(element, trips) {
+	if (!element) return;
+
+	const totalKm = (Array.isArray(trips) ? trips : []).reduce((sum, trip) => {
+		const parsedKm = parseTripLengthToKm(trip?.trip_length);
+		if (!Number.isFinite(parsedKm)) return sum;
+		return sum + parsedKm;
+	}, 0);
+
+	element.textContent = `${totalKm.toLocaleString('et-EE', { minimumFractionDigits: 0, maximumFractionDigits: 1 })} km`;
+}
+
+function parseTripLengthToKm(rawValue) {
+	const normalized = String(rawValue || '').trim().replace(',', '.');
+	const parsedKm = Number.parseFloat(normalized.replace(/[^\d.]/g, ''));
+	return Number.isFinite(parsedKm) ? parsedKm : NaN;
 }
 
 function renderLeaderboard(listElement, entries, valueFormatter) {

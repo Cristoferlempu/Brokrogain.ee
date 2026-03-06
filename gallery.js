@@ -37,6 +37,7 @@ function initGalleryModule() {
     }
 
     const payload = {
+      user_id: user.id,
       title: getGalleryValue('galleryImageTitle') || null,
       author_name: getGalleryValue('galleryAuthorName') || null
     };
@@ -62,6 +63,10 @@ function initGalleryModule() {
       await loadGalleryImages();
     } catch (error) {
       console.error(error);
+      if (String(error.message || '').includes('user_id')) {
+        setGalleryStatus('Lisa Supabase SQL Editoris: alter table public.gallery_images add column if not exists user_id uuid references auth.users(id) on delete set null;', 'error');
+        return;
+      }
       setGalleryStatus('Midagi läks valesti, palun proovi uuesti.', 'error');
     }
   });
@@ -138,13 +143,15 @@ async function loadGalleryImages() {
   grid.innerHTML = '';
 
   try {
+    const currentUser = await getCurrentUser();
+    const canModerate = await isModeratorUser();
+
     const { data, error } = await window.supabaseClient
       .from('gallery_images')
       .select('*')
       .order('created_at', { ascending: false });
 
     if (error) throw error;
-    const canModerate = await isModeratorUser();
 
     if (!data || !data.length) {
       grid.innerHTML = '<p class="gallery-loading">No images yet.</p>';
@@ -175,14 +182,24 @@ async function loadGalleryImages() {
       content.appendChild(title);
       content.appendChild(author);
 
-      if (canModerate) {
+      const isOwner = Boolean(currentUser?.id && item?.user_id && currentUser.id === item.user_id);
+      if (isOwner || canModerate) {
+        const editButton = document.createElement('button');
+        editButton.type = 'button';
+        editButton.className = 'btn btn-secondary';
+        editButton.textContent = 'Muuda';
+        editButton.addEventListener('click', async () => {
+          await editGalleryItem(item, currentUser?.id || null, canModerate);
+        });
+
         const deleteButton = document.createElement('button');
         deleteButton.type = 'button';
         deleteButton.className = 'btn btn-danger';
         deleteButton.textContent = 'Kustuta';
         deleteButton.addEventListener('click', async () => {
-          await deleteGalleryItem(item);
+          await deleteGalleryItem(item, currentUser?.id || null, canModerate);
         });
+        content.appendChild(editButton);
         content.appendChild(deleteButton);
       }
 
@@ -208,18 +225,69 @@ function getStoragePathFromPublicUrl(url) {
   return decodeURIComponent(url.slice(index + marker.length));
 }
 
-async function deleteGalleryItem(item) {
+async function editGalleryItem(item, userId, canModerate = false) {
+  if (!item?.id || !userId) {
+    setGalleryStatus('Logi sisse, et oma pilti muuta.', 'error');
+    return;
+  }
+
+  const nextTitle = window.prompt('Muuda pildi pealkirja:', item.title || '');
+  if (nextTitle === null) return;
+  const nextAuthor = window.prompt('Muuda autori nime:', item.author_name || '');
+  if (nextAuthor === null) return;
+
+  const title = String(nextTitle).trim() || null;
+  const author_name = String(nextAuthor).trim() || null;
+
+  setGalleryStatus('Uuendan pilti…', 'loading');
+
+  try {
+    let query = window.supabaseClient
+      .from('gallery_images')
+      .update({ title, author_name })
+      .eq('id', item.id);
+
+    if (!canModerate) {
+      query = query.eq('user_id', userId);
+    }
+
+    const { data, error } = await query.select('id');
+
+    if (error) throw error;
+    if (!data || !data.length) {
+      throw new Error('Pildi uuendamine ebaõnnestus (õigused puuduvad või rida ei leitud).');
+    }
+
+    setGalleryStatus('Pilt uuendatud.', 'success');
+    await loadGalleryImages();
+  } catch (error) {
+    console.error(error);
+    setGalleryStatus('Uuendamine ebaõnnestus. Muuta saab oma pilte (moderaator saab kõiki).', 'error');
+  }
+}
+
+async function deleteGalleryItem(item, userId, canModerate = false) {
   if (!item || !item.id) return;
+  if (!userId) {
+    setGalleryStatus('Logi sisse, et oma pilti kustutada.', 'error');
+    return;
+  }
   const confirmed = window.confirm('Kas kustutan selle pildi?');
   if (!confirmed) return;
 
   setGalleryStatus('Kustutan pilti…', 'loading');
 
   try {
-    const { error, count } = await window.supabaseClient
+    let query = window.supabaseClient
       .from('gallery_images')
       .delete({ count: 'exact' })
       .eq('id', item.id);
+
+    if (!canModerate) {
+      query = query.eq('user_id', userId);
+    }
+
+    const { error, count } = await query;
 
     if (error) throw error;
     if (typeof count === 'number' && count === 0) {
@@ -238,7 +306,7 @@ async function deleteGalleryItem(item) {
     await loadGalleryImages();
   } catch (error) {
     console.error(error);
-    setGalleryStatus('Kustutamine ebaõnnestus. Kontrolli moderaatori õiguseid.', 'error');
+    setGalleryStatus('Kustutamine ebaõnnestus. Kustutada saab oma pilte (moderaator saab kõiki).', 'error');
   }
 }
 
