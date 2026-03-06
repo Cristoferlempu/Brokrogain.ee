@@ -2,6 +2,7 @@ function initAuthPage() {
   const registerForm = document.getElementById('registerForm');
   const loginForm = document.getElementById('loginForm');
   const recoveryForm = document.getElementById('recoveryForm');
+  const recoveryToggle = document.getElementById('recoveryToggle');
   const logoutButton = document.getElementById('logoutButton');
   const status = document.getElementById('authStatus');
   const currentUser = document.getElementById('currentUser');
@@ -27,6 +28,26 @@ function initAuthPage() {
   window.supabaseClient.auth.onAuthStateChange(() => {
     refreshAuthState(currentUser, status, registerSection, loginSection, logoutSection);
   });
+
+  if (recoveryForm) {
+    recoveryForm.hidden = true;
+  }
+
+  if (recoveryToggle && recoveryForm) {
+    recoveryToggle.addEventListener('click', (event) => {
+      event.preventDefault();
+      const isOpening = recoveryForm.hidden;
+      recoveryForm.hidden = !recoveryForm.hidden;
+      recoveryToggle.textContent = isOpening
+        ? 'Peida parooli taastamine'
+        : 'Unustasid konto andmed?';
+
+      if (isOpening) {
+        const recoveryInput = document.getElementById('recoveryIdentity');
+        if (recoveryInput) recoveryInput.focus();
+      }
+    });
+  }
 
   registerForm.addEventListener('submit', async (event) => {
     event.preventDefault();
@@ -135,6 +156,10 @@ function initAuthPage() {
 
     recoveryForm.reset();
     setAuthStatus('Taastelink saadeti sinu emailile.', 'success');
+    if (recoveryToggle && recoveryForm) {
+      recoveryForm.hidden = true;
+      recoveryToggle.textContent = 'Unustasid konto andmed?';
+    }
   });
 
   if (resetPasswordForm) {
